@@ -1,0 +1,40 @@
+package main
+
+import (
+	
+	"context"
+	"fmt"
+	"os"
+	"strconv"
+
+	"github.com/jackc/pgx/v5"
+	_ "github.com/lib/pq"
+)
+
+
+/******** CRUD functions -- SQL database */////////
+//create 
+
+//read 
+
+//update
+
+//delete
+
+/******  CRUD functions -- for the note ********/
+
+//create
+//read
+//update
+//delete
+
+
+/****** find note ******/
+
+/****** analyse note ******/
+
+
+///////// main ///////////
+func main () {
+
+}
