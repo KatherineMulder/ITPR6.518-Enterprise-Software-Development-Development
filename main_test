@@ -1,21 +1,13 @@
 package main
 
 import (
-	
-	"context"
-	"fmt"
-	"os"
-	"strconv"
-
-	"github.com/jackc/pgx/v5"
 	_ "github.com/lib/pq"
 )
 
+/******** CRUD functions -- SQL database */ ////////
+//create
 
-/******** CRUD functions -- SQL database */////////
-//create 
-
-//read 
+//read
 
 //update
 
@@ -28,13 +20,11 @@ import (
 //update
 //delete
 
-
 /****** find note ******/
 
 /****** analyse note ******/
 
-
-///////// main ///////////
-func main () {
+// /////// main ///////////
+func testing() {
 
 }
