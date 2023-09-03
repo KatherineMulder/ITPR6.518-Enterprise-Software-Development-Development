@@ -1,5 +1,3 @@
-/// testing 
-
 package main
 
 import (
