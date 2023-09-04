@@ -25,6 +25,4 @@ import (
 /****** analyse note ******/
 
 // /////// main ///////////
-func testing() {
 
-}
