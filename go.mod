@@ -2,7 +2,10 @@ module EnterpriseNotes
 
 go 1.20
 
-require github.com/jackc/pgx/v5 v5.4.3
+require (
+	github.com/jackc/pgx/v5 v5.4.3
+	github.com/lib/pq v1.10.9
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect

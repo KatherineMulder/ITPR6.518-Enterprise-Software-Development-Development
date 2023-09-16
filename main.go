@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-
+	"EnterpriseNotes/setup"
+	
 	"github.com/jackc/pgx/v5"
+	
 )
+
 
 /*
 createdb todo
-psql todo < structure.sql
+psql todo < structure.sql	
 go build
 
 structure.sql:
@@ -25,11 +28,10 @@ var conn *pgx.Conn
 
 func main() {
 	var err error
+	// Call the createDataBase function from the setup package
+	err = setup.CreateDataBase()
 
-	//urlExample := "postgres://postgres:postgres@localhost:5432/todo"
-	//conn, err = pgx.Connect(context.Background(), urlExample)
-
-	//refer to run.cmd for the environment variables
+	
 	conn, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 
 	if err != nil {
