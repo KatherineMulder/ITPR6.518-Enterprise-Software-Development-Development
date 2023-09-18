@@ -1,4 +1,4 @@
-package database //I got the code from to do example 
+package database //I got the code from to do example
 
 import (
 	"context"
@@ -8,8 +8,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 )
-
-
 
 var conn *pgx.Conn
 
@@ -125,5 +123,3 @@ Example:
   todo list
 `)
 }
-
-

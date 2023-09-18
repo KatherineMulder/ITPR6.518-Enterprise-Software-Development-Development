@@ -1,20 +1,18 @@
 package main
 
 import (
+	"EnterpriseNotes/setup"
 	"context"
 	"fmt"
 	"os"
 	"strconv"
-	"EnterpriseNotes/setup"
-	
-	"github.com/jackc/pgx/v5"
-	
-)
 
+	"github.com/jackc/pgx/v5"
+)
 
 /*
 createdb todo
-psql todo < structure.sql	
+psql todo < structure.sql
 go build
 
 structure.sql:
@@ -31,7 +29,6 @@ func main() {
 	// Call the createDataBase function from the setup package
 	err = setup.CreateDataBase()
 
-	
 	conn, err = pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 
 	if err != nil {
