@@ -1,13 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"log"
+
 	"EnterpriseNotes/databasesetup"
 )
 
 func main() {
-	db, err := databasesetup.DatabaseSetup()
+	_, err := databasesetup.DatabaseSetup()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	defer db.Close()
+
+	fmt.Println("Database setup completed successfully.")
 }
