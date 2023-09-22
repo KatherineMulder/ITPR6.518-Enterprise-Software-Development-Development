@@ -9,12 +9,8 @@ import (
     "github.com/jackc/pgx/v5"
 )
 
-const (
-    host     = "localhost"
-    port     = 5432
-    user     = "postgres"
-    password = ""
-    dbname   = "EnterpriseNotes"
+var (
+    databaseURL = "postgres://postgres:postgres@my_postgres:5432/EnterpriseNotes"
 )
 
 type Note struct {
@@ -27,12 +23,8 @@ type Note struct {
 }
 
 func DatabaseSetup() (*pgx.Conn, error) {
-    // Construct the connection string
-    connString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
-        host, port, user, password, dbname)
-
-    // Establish the database connection
-    conn, err := pgx.Connect(context.Background(), connString)
+    // Use the databaseURL variable for the connection string
+    conn, err := pgx.Connect(context.Background(), databaseURL)
     if err != nil {
         log.Fatal(err)
         return nil, err
@@ -42,9 +34,21 @@ func DatabaseSetup() (*pgx.Conn, error) {
     defer cancel()
 
     if err := conn.Ping(ctx); err != nil {
-        log.Fatal("Connection to specified database failed: ", err)
-        return nil, err
+        // If the database doesn't exist, create it
+        if err := createDatabase(ctx); err != nil {
+            log.Fatal("Failed to create the database: ", err)
+            return nil, err
+        }
+
+        // Reconnect to the newly created database
+        conn.Close(ctx)
+        conn, err = pgx.Connect(context.Background(), databaseURL)
+        if err != nil {
+            log.Fatal(err)
+            return nil, err
+        }
     }
+
     fmt.Println("Connected successfully")
 
     if err := createTables(conn); err != nil {
@@ -54,6 +58,25 @@ func DatabaseSetup() (*pgx.Conn, error) {
 
     return conn, nil
 }
+
+func createDatabase(ctx context.Context) error {
+    // Connect to PostgreSQL without specifying a database
+    conn, err := pgx.Connect(ctx, "postgres://postgres:postgres@localhost:5432/")
+    if err != nil {
+        return err
+    }
+    defer conn.Close(ctx)
+
+    // Create the database if it doesn't exist
+    _, err = conn.Exec(ctx, "CREATE DATABASE IF NOT EXISTS EnterpriseNotes")
+    if err != nil {
+        return err
+    }
+
+    fmt.Println("Database created successfully")
+    return nil
+}
+
 
 func createTables(conn *pgx.Conn) error {
     notesTable := `
