@@ -11,16 +11,6 @@ import (
 
 var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
 
-
-type Note struct {
-    ID        int
-    Title     string
-    Content   string
-    Timestamp time.Time
-    Status    string
-    UserID    int
-}
-
 func DatabaseSetup() (*pgx.Conn, error) {
    
     // Use the databaseURL variable for the connection string
@@ -48,7 +38,6 @@ func DatabaseSetup() (*pgx.Conn, error) {
             return nil, err
         }
     }
-
     fmt.Println("Connected successfully")
 
     if err := createTables(conn); err != nil {
@@ -98,7 +87,6 @@ func createTables(conn *pgx.Conn) error {
         userID INT
     );
     `
-
     usersTable := `
     CREATE TABLE IF NOT EXISTS Users (
         userID serial PRIMARY KEY,
@@ -110,6 +98,7 @@ func createTables(conn *pgx.Conn) error {
 
     sharingTable := `
     CREATE TABLE IF NOT EXISTS Sharing (
+        sharingID serial PRIMARY KEY,
         userID INT,
         noteID INT,
         status VARCHAR(255),
