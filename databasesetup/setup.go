@@ -9,9 +9,8 @@ import (
     "github.com/jackc/pgx/v5"
 )
 
-var (
-    databaseURL = "postgres://postgres:postgres@my_postgres:5432/EnterpriseNotes"
-)
+var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
+
 
 type Note struct {
     ID        int
@@ -23,6 +22,7 @@ type Note struct {
 }
 
 func DatabaseSetup() (*pgx.Conn, error) {
+   
     // Use the databaseURL variable for the connection string
     conn, err := pgx.Connect(context.Background(), databaseURL)
     if err != nil {
@@ -67,13 +67,22 @@ func createDatabase(ctx context.Context) error {
     }
     defer conn.Close(ctx)
 
-    // Create the database if it doesn't exist
-    _, err = conn.Exec(ctx, "CREATE DATABASE IF NOT EXISTS EnterpriseNotes")
+    // Check if the database already exists
+    var dbExists bool
+    err = conn.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = $1)", "EnterpriseNotes").Scan(&dbExists)
     if err != nil {
         return err
     }
 
-    fmt.Println("Database created successfully")
+    if !dbExists {
+        // Create the database if it doesn't exist
+        _, err := conn.Exec(ctx, "CREATE DATABASE EnterpriseNotes")
+        if err != nil {
+            return err
+        }
+        fmt.Println("Database created successfully")
+    }
+
     return nil
 }
 
