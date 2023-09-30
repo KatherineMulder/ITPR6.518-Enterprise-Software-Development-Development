@@ -1,32 +1,61 @@
-package main
+package models
 
 import "time"
 
 //Create Structs
 type Note struct {
-    ID        int
-    Title     string
-    Content   string
-    Timestamp time.Time
-    Status    string
-    UserID    int
+	ID               int       `db:"noteID"`
+	UserID           int       `db:"userID"`
+	NoteName         string    `db:"noteName"`
+	NoteText         string    `db:"noteText"`
+	CreationDateTime time.Time `db:"creationDateTime"`
+	CompletionDateTime time.Time `db:"completionDateTime"`
+	Status           string    `db:"status"`
+	DelegatedToUserID int       `db:"delegatedToUserID"`
 }
 
 type User struct {
-	ID       int
-	Username string
-	Password string
-	Email    string
+	ID              int       `db:"userID"`
+	Username        string    `db:"name"`
+	Password        string    `db:"password_hash"`
+	Email           string    `db:"email"`
+	RegistrationDate time.Time `db:"registration_date"`
 }
+
 
 type Sharing struct {
-	sharingID int
-	NoteID    int
-	UserID    int
-	status    string
-	Timestamp time.Time
+	SharingID int       `db:"sharingID"`
+	NoteID    int       `db:"noteID"`
+	UserID    int       `db:"userID"`
+	Status    string    `db:"status"`
+	Timestamp time.Time `db:"timestamp"`
 }
 
-// Create Struct for Test Data
-
+// CreateStructsForTestData creates and returns sample data instances for testing.
+func CreateStructsForTestData() (Note, User, Sharing) {
+	return Note{
+			ID:               1,
+			UserID:           1,
+			NoteName:         "Sample Note",
+			NoteText:         "This is a sample note content.",
+			CreationDateTime: time.Now(),
+			CompletionDateTime: time.Now().Add(24 * time.Hour), // Sample completion time
+			Status:           "In Progress",
+			DelegatedToUserID: 2, // User ID to whom it's delegated
+		},
+		User{
+			ID:              1,
+			Username:        "exampleUser",
+			Password:        "hashedPassword", // Hashed password
+			Email:           "user@example.com",
+			RegistrationDate: time.Now(),
+		},
+		Sharing{
+			SharingID: 1,
+			NoteID:    1,
+			UserID:    3, // User ID with whom the note is shared
+			Status:    "Read",
+			Timestamp: time.Now(),
+		}
+}
 

@@ -5,6 +5,7 @@ import (
     "fmt"
     "log"
     "time"
+    "EnterpriseNotes/models"
 
     "github.com/jackc/pgx/v5"
 )
@@ -77,46 +78,49 @@ func createDatabase(ctx context.Context) error {
 
 
 func createTables(conn *pgx.Conn) error {
-    notesTable := `
-    CREATE TABLE IF NOT EXISTS Notes (
-        ID serial PRIMARY KEY,
-        title VARCHAR(255),
-        content TEXT,
-        timestamp TIMESTAMP,
-        status VARCHAR(255),
-        userID INT
-    );
-    `
     usersTable := `
     CREATE TABLE IF NOT EXISTS Users (
         userID serial PRIMARY KEY,
         name VARCHAR(255),
         email VARCHAR(255) UNIQUE,
-        password_hash VARCHAR(255)
+        password_hash VARCHAR(255),
+        registration_date TIMESTAMP
     );
     `
 
-    sharingTable := `
-    CREATE TABLE IF NOT EXISTS Sharing (
-        sharingID serial PRIMARY KEY,
+    notesTable := `
+    CREATE TABLE IF NOT EXISTS Notes (
+        noteID serial PRIMARY KEY,
         userID INT,
-        noteID INT,
+        noteName VARCHAR(255),
+        noteText TEXT,
+        creationDateTime TIMESTAMP,
+        completionDateTime TIMESTAMP,
         status VARCHAR(255),
-        timestamp TIMESTAMP
+        delegatedToUserID INT
     );
     `
 
-    _, err := conn.Exec(context.Background(), notesTable)
+    noteAccessTable := `
+    CREATE TABLE IF NOT EXISTS NoteAccess (
+        accessID serial PRIMARY KEY,
+        noteID INT,
+        userID INT,
+        accessType VARCHAR(255)
+    );
+    `
+
+    _, err := conn.Exec(context.Background(), usersTable)
     if err != nil {
         return err
     }
 
-    _, err = conn.Exec(context.Background(), usersTable)
+    _, err = conn.Exec(context.Background(), notesTable)
     if err != nil {
         return err
     }
 
-    _, err = conn.Exec(context.Background(), sharingTable)
+    _, err = conn.Exec(context.Background(), noteAccessTable)
     if err != nil {
         return err
     }
@@ -125,9 +129,9 @@ func createTables(conn *pgx.Conn) error {
 }
 
 // CreateNote inserts a new note into the Notes table.
-func CreateNote(conn *pgx.Conn, title string, content string, status string, userID int) error {
-    _, err := conn.Exec(context.Background(), "INSERT INTO Notes (title, content, timestamp, status, userID) VALUES ($1, $2, $3, $4, $5)",
-        title, content, time.Now(), status, userID)
+func CreateNote(conn *pgx.Conn, userID int, noteName string, noteText string, creationDateTime time.Time, completionDateTime time.Time, status string, delegatedToUserID int) error {
+    _, err := conn.Exec(context.Background(), "INSERT INTO Notes (userID, noteName, noteText, creationDateTime, completionDateTime, status, delegatedToUserID) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        userID, noteName, noteText, creationDateTime, completionDateTime, status, delegatedToUserID)
     if err != nil {
         return err
     }
@@ -136,11 +140,11 @@ func CreateNote(conn *pgx.Conn, title string, content string, status string, use
 }
 
 // GetNoteByID retrieves a note by its ID.
-func GetNoteByID(conn *pgx.Conn, noteID int) (*Note, error) {
-    var note Note
+func GetNoteByID(conn *pgx.Conn, noteID int) (*models.Note, error) {
+    var note models.Note
 
-    err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE ID = $1", noteID).
-        Scan(&note.ID, &note.Title, &note.Content, &note.Timestamp, &note.Status, &note.UserID)
+    err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE noteID = $1", noteID).
+        Scan(&note.NoteID, &note.UserID, &note.NoteName, &note.NoteText, &note.CreationDateTime, &note.CompletionDateTime, &note.Status, &note.DelegatedToUserID)
     if err != nil {
         return nil, err
     }
@@ -149,8 +153,8 @@ func GetNoteByID(conn *pgx.Conn, noteID int) (*Note, error) {
 }
 
 // UpdateNote updates an existing note.
-func UpdateNote(conn *pgx.Conn, noteID int, title string, content string, status string) error {
-    _, err := conn.Exec(context.Background(), "UPDATE Notes SET title = $1, content = $2, status = $3 WHERE ID = $4", title, content, status, noteID)
+func UpdateNote(conn *pgx.Conn, noteID int, noteName string, noteText string, completionDateTime time.Time, status string, delegatedToUserID int) error {
+    _, err := conn.Exec(context.Background(), "UPDATE Notes SET noteName = $1, noteText = $2, completionDateTime = $3, status = $4, delegatedToUserID = $5 WHERE noteID = $6", noteName, noteText, completionDateTime, status, delegatedToUserID, noteID)
     if err != nil {
         return err
     }
@@ -160,7 +164,7 @@ func UpdateNote(conn *pgx.Conn, noteID int, title string, content string, status
 
 // DeleteNoteByID deletes a note by its ID.
 func DeleteNoteByID(conn *pgx.Conn, noteID int) error {
-    _, err := conn.Exec(context.Background(), "DELETE FROM Notes WHERE ID = $1", noteID)
+    _, err := conn.Exec(context.Background(), "DELETE FROM Notes WHERE noteID = $1", noteID)
     if err != nil {
         return err
     }
