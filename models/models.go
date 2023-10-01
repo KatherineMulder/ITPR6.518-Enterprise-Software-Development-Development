@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-//Create Structs
+//Create Structs for the tables
 type Note struct {
 	ID               int       `db:"noteID"`
 	UserID           int       `db:"userID"`
@@ -39,14 +39,14 @@ func CreateStructsForTestData() (Note, User, Sharing) {
 			NoteName:         "Sample Note",
 			NoteText:         "This is a sample note content.",
 			CreationDateTime: time.Now(),
-			CompletionDateTime: time.Now().Add(24 * time.Hour), // Sample completion time
+			CompletionDateTime: time.Now().Add(24 * time.Hour), // completion time
 			Status:           "In Progress",
 			DelegatedToUserID: 2, // User ID to whom it's delegated
 		},
 		User{
 			ID:              1,
 			Username:        "exampleUser",
-			Password:        "hashedPassword", // Hashed password
+			Password:        "hashedPassword", 
 			Email:           "user@example.com",
 			RegistrationDate: time.Now(),
 		},

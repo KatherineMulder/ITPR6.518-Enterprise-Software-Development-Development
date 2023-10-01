@@ -33,7 +33,7 @@ func main() {
 		log.Fatal("Failed to retrieve a note: ", err)
 	}
 
-	fmt.Printf("Note ID: %d\nTitle: %s\nContent: %s\nStatus: %s\nUserID: %d\n", note.ID, note.Title, note.Content, note.Status, note.UserID)
+	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.ID, note.NoteName, note.NoteText, note.Status, note.UserID)
 
 	// updating a note
 	err = databasesetup.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive", 1)
@@ -51,3 +51,4 @@ func main() {
 
 	fmt.Println("Note deleted successfully.")
 }
+
