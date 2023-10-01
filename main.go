@@ -1,14 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"context"
+	"time"
 
 	"EnterpriseNotes/databasesetup"
 )
-
-
 
 func main() {
 	conn, err := databasesetup.DatabaseSetup()
@@ -21,7 +20,7 @@ func main() {
 	fmt.Println("Database setup completed successfully.")
 
 	// Example of creating a new note
-	err = databasesetup.CreateNote(conn, "Sample Note Title", "Sample Note Content", "Active", 1)
+	err = databasesetup.CreateNote(conn, 1, "Sample Note Title", "Sample Note Content", time.Now(), time.Now(), "Active", 1)
 	if err != nil {
 		log.Fatal("Failed to create a new note: ", err)
 	}
@@ -29,16 +28,15 @@ func main() {
 	fmt.Println("Note created successfully.")
 
 	// retrieving a note by ID
-	note, err := databasesetup.GetNoteByID(conn, 1) 
+	note, err := databasesetup.GetNoteByID(conn, 1)
 	if err != nil {
 		log.Fatal("Failed to retrieve a note: ", err)
 	}
 
-	fmt.Printf("Note ID: %d\nTitle: %s\nContent: %s\nStatus: %s\nUserID: %d\n",
-		note.ID, note.Title, note.Content, note.Status, note.UserID)
+	fmt.Printf("Note ID: %d\nTitle: %s\nContent: %s\nStatus: %s\nUserID: %d\n", note.ID, note.Title, note.Content, note.Status, note.UserID)
 
 	// updating a note
-	err = databasesetup.UpdateNote(conn, 1, "Updated Title", "Updated Content", "Inactive") 
+	err = databasesetup.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive", 1)
 	if err != nil {
 		log.Fatal("Failed to update the note: ", err)
 	}
@@ -46,7 +44,7 @@ func main() {
 	fmt.Println("Note updated successfully.")
 
 	// deleting a note by ID
-	err = databasesetup.DeleteNoteByID(conn, 1) 
+	err = databasesetup.DeleteNoteByID(conn, 1)
 	if err != nil {
 		log.Fatal("Failed to delete the note: ", err)
 	}
