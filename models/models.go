@@ -6,8 +6,8 @@ import "time"
 type Note struct {
 	ID               int       `db:"noteID"`
 	UserID           int       `db:"userID"`
-	NoteName         string    `db:"noteName"`
-	NoteText         string    `db:"noteText"`
+	NoteTitle         string    `db:"noteTitle"`
+	NoteContent         string    `db:"NoteContent"`
 	CreationDateTime time.Time `db:"creationDateTime"`
 	CompletionDateTime time.Time `db:"completionDateTime"`
 	Status           string    `db:"status"`
@@ -36,8 +36,8 @@ func CreateStructsForTestData() (Note, User, Sharing) {
 	return Note{
 			ID:               1,
 			UserID:           1,
-			NoteName:         "Sample Note",
-			NoteText:         "This is a sample note content.",
+			NoteTitle:         "Sample Note",
+			NoteContent:         "This is a sample note content.",
 			CreationDateTime: time.Now(),
 			CompletionDateTime: time.Now().Add(24 * time.Hour), // completion time
 			Status:           "In Progress",
