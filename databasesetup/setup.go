@@ -11,8 +11,9 @@ import (
 
 var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
 
-func DatabaseSetup() (*pgx.Conn, error) {
 
+func DatabaseSetup() (*pgx.Conn, error) {
+	
 	// Use the databaseURL variable for the connection string
 	conn, err := pgx.Connect(context.Background(), databaseURL)
 	if err != nil {
@@ -75,63 +76,63 @@ func createDatabase(ctx context.Context) error {
 	return nil
 }
 
+// Create Tables Function
 func createTables(conn *pgx.Conn) error {
-	usersTable := `
-    CREATE TABLE IF NOT EXISTS Users (
-        userID serial PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255) UNIQUE,
-        password_hash VARCHAR(255),
-        registration_date TIMESTAMP
+	
+	usersTable := `DROP TABLE IF EXISTS users;
+    CREATE TABLE Users (
+        userID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+        userName VARCHAR(100),
+		password VARCHAR(100),
+		email VARCHAR(100),
+		registrationDate DATE DEFAULT CURRENT_TIMESTAMP,
+		readSetting BOOL DEFAULT false,
+		writingSetting BOOL DEFAULT false,
     );
     `
-	notesTable := `
-    CREATE TABLE IF NOT EXISTS Notes (
-        noteID serial PRIMARY KEY,
+	notesTable := `DROP TABLE IF EXISTS notes;
+    CREATE TABLE Notes (
+        noteID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         userID INT,
-        noteTitle VARCHAR(255),
-        NoteContent TEXT,
-        creationDateTime TIMESTAMP,
-        completionDateTime TIMESTAMP,
-        status VARCHAR(255),
-        delegatedToUserID INT
+		delegatedToUserID INT,
+		noteTitle VARCHAR(50),
+		noteContent TEXT,
+		creationDateTime timestamp DEFAULT CURRENT_TIMESTAMP,
+		completionDateTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		status VARCHAR(50),
+		shareUser INT[]
     );
     `
 
-	sharingTable := `
-    CREATE TABLE IF NOT EXISTS Sharing (
-        sharingID serial PRIMARY KEY,
-        noteID INT,
-        userID INT,
-        status VARCHAR(255),
-        timestamp TIMESTAMP
-    );
+	sharingTable := `DROP TABLE IF EXISTS sharing;
+    CREATE TABLE Sharing (
+        sharingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		noteID INT,
+		userID INT,
+		status VARCHAR(50) DEFAULT 'none',
+		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
     `
-
 	_, err := conn.Exec(context.Background(), usersTable)
 	if err != nil {
+		log.Fatalf("An error occurred when creating the 'users' table.\nGot %s", err)
 		return err
 	}
 
 	_, err = conn.Exec(context.Background(), notesTable)
 	if err != nil {
+		log.Fatalf("An error occurred when creating the 'notes' table.\nGot %s\n", err)
 		return err
 	}
 
 	_, err = conn.Exec(context.Background(), sharingTable)
 	if err != nil {
+		log.Fatalf("An error occurred when creating the 'sharings' table.\nGot %s\n", err)
 		return err
 	}
 
+	// No error occurred, so return nil to indicate success
 	return nil
 }
 
-// DeleteNoteByID deletes a note by its ID.
-func DeleteNoteByID(conn *pgx.Conn, noteID int) error {
-	_, err := conn.Exec(context.Background(), "DELETE FROM Notes WHERE noteID = $1", noteID)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
+// Populate Tables Function
