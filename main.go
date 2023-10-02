@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"time"
-	
+
 	"EnterpriseNotes/databasesetup"
+	"EnterpriseNotes/managenote"
 )
 
 func main() {
@@ -20,7 +21,7 @@ func main() {
 	fmt.Println("Database setup completed successfully.")
 
 	// Example of creating a new note
-	err = databasesetup.CreateNote(conn, 1, "Sample Note Title", "Sample Note Content", time.Now(), time.Now(), "Active", 1)
+	err = managenote.CreateNote(conn, 1, "Sample Note Title", "Sample Note Content", time.Now(), time.Now(), "Active", 1)
 	if err != nil {
 		log.Fatal("Failed to create a new note: ", err)
 	}
@@ -28,7 +29,7 @@ func main() {
 	fmt.Println("Note created successfully.")
 
 	// retrieving a note by ID
-	note, err := databasesetup.GetNoteByID(conn, 1)
+	note, err := managenote.GetNoteByID(conn, 1)
 	if err != nil {
 		log.Fatal("Failed to retrieve a note: ", err)
 	}
@@ -36,7 +37,7 @@ func main() {
 	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.ID, note.NoteName, note.NoteText, note.Status, note.UserID)
 
 	// updating a note
-	err = databasesetup.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive", 1)
+	err = managenote.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive", 1)
 	if err != nil {
 		log.Fatal("Failed to update the note: ", err)
 	}
@@ -44,11 +45,10 @@ func main() {
 	fmt.Println("Note updated successfully.")
 
 	// deleting a note by ID
-	err = databasesetup.DeleteNoteByID(conn, 1)
+	err = managenote.DeleteNoteByID(conn, 1)
 	if err != nil {
 		log.Fatal("Failed to delete the note: ", err)
 	}
 
 	fmt.Println("Note deleted successfully.")
 }
-

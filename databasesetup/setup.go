@@ -1,7 +1,10 @@
 package databasesetup
 
 import (
+<<<<<<< HEAD
 	"EnterpriseNotes/models"
+=======
+>>>>>>> 6acccc5c81da3588be976c6efd135bb26afc26f5
 	"context"
 	"fmt"
 	"log"
@@ -125,6 +128,7 @@ func createTables(conn *pgx.Conn) error {
 	}
 
 	return nil
+<<<<<<< HEAD
 }
 
 // CreateNote inserts a new note into the Notes table.
@@ -163,6 +167,8 @@ func UpdateNote(conn *pgx.Conn, noteID int, noteTitle string, NoteContent string
 	}
 
 	return nil
+=======
+>>>>>>> 6acccc5c81da3588be976c6efd135bb26afc26f5
 }
 
 // DeleteNoteByID deletes a note by its ID.
