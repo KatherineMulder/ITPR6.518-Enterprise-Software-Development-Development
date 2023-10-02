@@ -1,10 +1,6 @@
 package databasesetup
 
 import (
-<<<<<<< HEAD
-	"EnterpriseNotes/models"
-=======
->>>>>>> 6acccc5c81da3588be976c6efd135bb26afc26f5
 	"context"
 	"fmt"
 	"log"
@@ -128,47 +124,6 @@ func createTables(conn *pgx.Conn) error {
 	}
 
 	return nil
-<<<<<<< HEAD
-}
-
-// CreateNote inserts a new note into the Notes table.
-func CreateNote(conn *pgx.Conn, userID int, noteTitle string, NoteContent string, creationDateTime time.Time, completionDateTime time.Time, status string, delegatedToUserID int) error {
-	_, err := conn.Exec(context.Background(), "INSERT INTO Notes (userid, noteTitle, NoteContent, creationdatetime, completiondatetime, status, delegatedtouserid) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-		userID, noteTitle, NoteContent, creationDateTime, completionDateTime, status, delegatedToUserID)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// GetNoteByID retrieves a note by its ID.
-func GetNoteByID(conn *pgx.Conn, noteID int) (*models.Note, error) {
-	var note models.Note
-
-	err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE noteID = $1", noteID).
-		Scan(&note.ID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDateTime, &note.CompletionDateTime, &note.Status, &note.DelegatedToUserID)
-
-	if err != nil {
-		// Handle the error, log it, and return it
-		fmt.Println("Error retrieving note:", err)
-		return nil, err
-	}
-
-	return &note, nil
-}
-
-// UpdateNote updates an existing note.
-func UpdateNote(conn *pgx.Conn, noteID int, noteTitle string, NoteContent string, completionDateTime time.Time, status string, delegatedToUserID int) error {
-	_, err := conn.Exec(context.Background(), "UPDATE Notes SET noteTitle = $1, NoteContent = $2, completionDateTime = $3, status = $4, delegatedToUserID = $5 WHERE noteID = $6", noteTitle, NoteContent, completionDateTime, status, delegatedToUserID, noteID)
-	if err != nil {
-		return err
-	}
-
-	return nil
-=======
->>>>>>> 6acccc5c81da3588be976c6efd135bb26afc26f5
 }
 
 // DeleteNoteByID deletes a note by its ID.
