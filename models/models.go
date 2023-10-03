@@ -1,13 +1,16 @@
 package models
 
+import
+"time"
+
 //Create Structs for the tables
 type Note struct {
 	NoteID         int    `db:"noteID"`
 	UserID         int    `db:"userID"`
 	NoteTitle      string `db:"noteTitle"`
 	NoteContent    string `db:"noteContent"`
-	CreationDate   string `db:"creationDate"`
-	CompletionDate string `db:"completionDate"`
+	CreationDate   time.Time `db:"creationDate"`
+	CompletionDate time.Time `db:"completionDate"`
 	Status         string `db:"status"`
 }
 
@@ -23,7 +26,7 @@ type Sharing struct {
 	SharingID        int    `db:"sharingID"`
 	NoteID           int    `db:"noteID"`
 	UserID           int    `db:"userID"`
-	Timestamp        string `db:"timestamp"`
+	Timestamp        time.Time `db:"timestamp"`
 	WrittingSettings bool   `db:"writingSettings"`
 }
 

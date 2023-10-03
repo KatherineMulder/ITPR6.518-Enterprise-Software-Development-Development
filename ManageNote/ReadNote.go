@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"EnterpriseNotes/models"
-
 	"github.com/jackc/pgx/v5"
 )
 
