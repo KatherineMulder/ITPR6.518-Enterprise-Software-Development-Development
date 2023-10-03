@@ -78,13 +78,13 @@ func createDatabase(ctx context.Context) error {
 // Create Tables Function
 func createTables(conn *pgx.Conn) error {
 
-	usersTable := `DROP TABLE IF EXISTS user;
-    CREATE TABLE User (
+	usersTable := `DROP TABLE IF EXISTS "user";
+    CREATE TABLE "user" (
         userID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
         username VARCHAR(100),
 		password VARCHAR(100),
 		email VARCHAR(100),
-		registrationDate DATE DEFAULT CURRENT_TIMESTAMP,
+		registrationDate DATE DEFAULT CURRENT_TIMESTAMP
     );
     `
 	notesTable := `DROP TABLE IF EXISTS notes;
@@ -95,7 +95,7 @@ func createTables(conn *pgx.Conn) error {
 		noteContent TEXT,
 		creationDate timestamp DEFAULT CURRENT_TIMESTAMP,
 		completionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		status VARCHAR(50),
+		status VARCHAR(50)
     );
     `
 
@@ -104,8 +104,8 @@ func createTables(conn *pgx.Conn) error {
 		sharingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		noteID INT,
 		userID INT,
-		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		writingSetting BOOL DEFAULT false,
+		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		writingSetting BOOL DEFAULT false
 	);
     `
 	_, err := conn.Exec(context.Background(), usersTable)
