@@ -7,8 +7,8 @@ import (
 )
 
 // DeleteNoteByID deletes a note by its ID.
-func DeleteNoteByID(conn *pgx.Conn, noteID int) error {
-	_, err := conn.Exec(context.Background(), "DELETE FROM Notes WHERE noteID = $1", noteID)
+func DeleteNoteByID(conn *pgx.Conn, NoteID int) error {
+	_, err := conn.Exec(context.Background(), "DELETE FROM Notes WHERE noteID = $1", NoteID)
 	if err != nil {
 		return err
 	}

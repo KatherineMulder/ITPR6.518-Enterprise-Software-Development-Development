@@ -8,9 +8,9 @@ import (
 )
 
 // CreateNote inserts a new note into the Notes table.
-func CreateNote(conn *pgx.Conn, userID int, noteTitle string, noteContent string, creationDate time.Time, completionDate time.Time, status string) error {
+func CreateNote(conn *pgx.Conn, UserID int, NoteTitle string, NoteContent string, CreationDate time.Time, CompletionDate time.Time, Status string) error {
 	_, err := conn.Exec(context.Background(), "INSERT INTO Notes (userID, noteTitle, noteContent, creationDate, completiondate, status) VALUES ($1, $2, $3, $4, $5, $6)",
-		userID, noteTitle, noteContent, completionDate, completionDate, status[2])
+		UserID, NoteTitle, NoteContent, CompletionDate, CompletionDate, Status[2])
 
 	if err != nil {
 		return err
