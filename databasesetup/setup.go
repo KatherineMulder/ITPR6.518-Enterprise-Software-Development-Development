@@ -11,9 +11,8 @@ import (
 
 var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
 
-
 func DatabaseSetup() (*pgx.Conn, error) {
-	
+
 	// Use the databaseURL variable for the connection string
 	conn, err := pgx.Connect(context.Background(), databaseURL)
 	if err != nil {
@@ -78,40 +77,36 @@ func createDatabase(ctx context.Context) error {
 
 // Create Tables Function
 func createTables(conn *pgx.Conn) error {
-	
-	usersTable := `DROP TABLE IF EXISTS users;
-    CREATE TABLE Users (
+
+	usersTable := `DROP TABLE IF EXISTS user;
+    CREATE TABLE User (
         userID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
-        userName VARCHAR(100),
+        username VARCHAR(100),
 		password VARCHAR(100),
 		email VARCHAR(100),
 		registrationDate DATE DEFAULT CURRENT_TIMESTAMP,
-		readSetting BOOL DEFAULT false,
-		writingSetting BOOL DEFAULT false,
     );
     `
 	notesTable := `DROP TABLE IF EXISTS notes;
     CREATE TABLE Notes (
         noteID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         userID INT,
-		delegatedToUserID INT,
 		noteTitle VARCHAR(50),
 		noteContent TEXT,
-		creationDateTime timestamp DEFAULT CURRENT_TIMESTAMP,
-		completionDateTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		creationDate timestamp DEFAULT CURRENT_TIMESTAMP,
+		completionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		status VARCHAR(50),
-		shareUser INT[]
     );
     `
 
 	sharingTable := `DROP TABLE IF EXISTS sharing;
     CREATE TABLE Sharing (
-        sharingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		sharingID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		noteID INT,
 		userID INT,
-		status VARCHAR(50) DEFAULT 'none',
 		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+		writingSetting BOOL DEFAULT false,
+	);
     `
 	_, err := conn.Exec(context.Background(), usersTable)
 	if err != nil {
@@ -134,5 +129,3 @@ func createTables(conn *pgx.Conn) error {
 	// No error occurred, so return nil to indicate success
 	return nil
 }
-
-// Populate Tables Function

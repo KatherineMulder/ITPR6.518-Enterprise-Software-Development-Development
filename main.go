@@ -8,6 +8,7 @@ import (
 
 	"EnterpriseNotes/databasesetup"
 	"EnterpriseNotes/managenote"
+	"EnterpriseNotes/models"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 	fmt.Println("Database setup completed successfully.")
 
 	// Example of creating a new note
-	err = managenote.CreateNote(conn, 1, "Sample Note Title", "Sample Note Content", time.Now(), time.Now(), "Active", 1)
+	err = managenote.CreateNote(conn, 1, "Sample Note Title", "Sample Note Content", time.Now(), time.Now(), models.Statuses[2])
 	if err != nil {
 		log.Fatal("Failed to create a new note: ", err)
 	}
@@ -34,10 +35,10 @@ func main() {
 		log.Fatal("Failed to retrieve a note: ", err)
 	}
 
-	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.ID, note.NoteName, note.NoteText, note.Status, note.UserID)
+	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.noteID, note.noteTitle, note.noteContent, note.status, note.userID)
 
 	// updating a note
-	err = managenote.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive", 1)
+	err = managenote.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive")
 	if err != nil {
 		log.Fatal("Failed to update the note: ", err)
 	}

@@ -2,42 +2,29 @@ package models
 
 //Create Structs for the tables
 type Note struct {
-	ID               	int       `db:"noteID"`
-	UserID           	int       `db:"userID"`
-	DelegatedToUserID 	int       `db:"delegatedToUserID"`
-	NoteTitle         	string    `db:"noteTitle"`
-	NoteContent         string    `db:"NoteContent"`
-	CreationDate 		string 	  `db:"creationDateTime"`
-	CompletionDate  	string 	  `db:"completionDateTime"`
-	Status           	string    `db:"status"`
-	sharedUsers			string    `db:"sharedUsers"`
-	
+	noteID         int    `db:"NoteID"`
+	userID         int    `db:"UserID"`
+	noteTitle      string `db:"NoteTitle"`
+	noteContent    string `db:"NoteContent"`
+	creationDate   string `db:"CreationDate"`
+	completionDate string `db:"CompletionDate"`
+	status         string `db:"Status"`
 }
 
 type User struct {
-	ID              	int       `db:"userID"`
-	Username        	string    `db:"name"`
-	Password        	string    `db:"password_hash"`
-	Email           	string    `db:"email"`
-	RegistrationDate 	string	  `db:"registration_date"`
-	readingSettings		bool    `db:"readingSettings"`
-	writtingSettings	bool    `db:"writtingSettings"`
+	userID           int    `db:"UserID"`
+	username         string `db:"Username"`
+	password         string `db:"Password"`
+	email            string `db:"Email"`
+	registrationDate string `db:"RegistrationDate"`
 }
-
 
 type Sharing struct {
-	SharingID 			int       `db:"sharingID"`
-	NoteID    			int       `db:"noteID"`
-	UserID   			int       `db:"userID"`
-	Status    			string    `db:"status"`
-	Timestamp 			string 	  `db:"timestamp"`
-}
-
-// Create Struct for Test Data
-type Data struct {
-	Users        []User        `db:"users"`
-	Notes        []Note        `db:"notes"`
-	Sharings     []Sharing     `db:"associations"`
+	sharingID        int    `db:"SharingID"`
+	noteID           int    `db:"NoteID"`
+	userID           int    `db:"UserID"`
+	timestamp        string `db:"Timestamp"`
+	writtingSettings bool   `db:"WritingSettings"`
 }
 
 // Create Slices

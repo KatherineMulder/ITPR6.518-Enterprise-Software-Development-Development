@@ -10,11 +10,11 @@ import (
 )
 
 // GetNoteByID retrieves a note by its ID.
-func GetNoteByID(conn *pgx.Conn, noteID int) (*models.Note, error) {
+func GetNoteByID(conn *pgx.Conn, NoteID int) (*models.Note, error) {
 	var note models.Note
 
 	err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE noteID = $1", noteID).
-		Scan(&note.ID, &note.UserID, &note.NoteName, &note.NoteText, &note.CreationDateTime, &note.CompletionDateTime, &note.Status, &note.DelegatedToUserID)
+		Scan(&note.noteID, &note.userID, &note.noteTitle, &note.noteContent, &note.creationDate, &note.completionDate, &note.status)
 
 	if err != nil {
 		// Handle the error, log it, and return it
