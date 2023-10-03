@@ -35,7 +35,7 @@ func main() {
 		log.Fatal("Failed to retrieve a note: ", err)
 	}
 
-	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.noteID, note.noteTitle, note.noteContent, note.status, note.userID)
+	fmt.Printf("Note ID: %d\nTitle: %s\nNoteText: %s\nStatus: %s\nUserID: %d\n", note.NoteID, note.NoteTitle, note.NoteContent, note.Status, note.UserID)
 
 	// updating a note
 	err = managenote.UpdateNote(conn, 1, "Updated Title", "Updated Content", time.Now(), "Inactive")

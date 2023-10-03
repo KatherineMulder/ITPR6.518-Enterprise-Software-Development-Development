@@ -13,8 +13,8 @@ import (
 func GetNoteByID(conn *pgx.Conn, NoteID int) (*models.Note, error) {
 	var note models.Note
 
-	err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE noteID = $1", noteID).
-		Scan(&note.noteID, &note.userID, &note.noteTitle, &note.noteContent, &note.creationDate, &note.completionDate, &note.status)
+	err := conn.QueryRow(context.Background(), "SELECT * FROM Notes WHERE noteID = $1", NoteID).
+		Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.CompletionDate, &note.Status)
 
 	if err != nil {
 		// Handle the error, log it, and return it
