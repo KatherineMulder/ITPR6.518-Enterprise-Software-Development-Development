@@ -9,8 +9,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+//database
 var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
 
+//HTTP
+
+
+// Database Setup Function
 func DatabaseSetup() (*pgx.Conn, error) {
 
 	// Use the databaseURL variable for the connection string
@@ -129,3 +134,8 @@ func createTables(conn *pgx.Conn) error {
 	// No error occurred, so return nil to indicate success
 	return nil
 }
+
+
+//populate tables with data using json
+//API functions 
+//HTTP server functions

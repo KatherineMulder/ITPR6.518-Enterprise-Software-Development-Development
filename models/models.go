@@ -30,6 +30,7 @@ type Sharing struct {
 	WrittingSettings bool   `db:"writingSettings"`
 }
 
+
 // Create Slices
 var Users []User
 var Notes []Note
@@ -41,3 +42,4 @@ var Statuses = [5]string{
 	"cancelled",
 	"delegated",
 }
+
