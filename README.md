@@ -7,4 +7,4 @@
 
 
 ## Database Design information 
-![ERD](Statics/ERD.png "ERD")
+![ERD](Information/ERD.png "ERD")

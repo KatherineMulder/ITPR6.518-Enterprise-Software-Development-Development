@@ -3,7 +3,6 @@ package managenote
 import (
 	"context"
 	"time"
-
 	"github.com/jackc/pgx/v5"
 )
 
