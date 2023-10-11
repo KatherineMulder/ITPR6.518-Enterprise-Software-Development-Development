@@ -93,6 +93,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
 	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/lsit", a.listHandler).Methods("GET")
+	//a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
 
 	log.Println("Routes established")
 }
