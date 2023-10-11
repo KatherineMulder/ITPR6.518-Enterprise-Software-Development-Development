@@ -1,5 +1,6 @@
 package databasesetup
 
+/*
 import (
 	"context"
 	"fmt"
@@ -9,11 +10,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-//database
+// database
 var databaseURL = "postgres://postgres:postgres@localhost:5432/EnterpriseNotes"
 
 //HTTP
-
 
 // Database Setup Function
 func DatabaseSetup() (*pgx.Conn, error) {
@@ -83,9 +83,9 @@ func createDatabase(ctx context.Context) error {
 // Create Tables Function
 func createTables(conn *pgx.Conn) error {
 
-	usersTable := `DROP TABLE IF EXISTS "user";
-    CREATE TABLE "user" (
-        userID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+	usersTable := `DROP TABLE IF EXISTS user;
+    CREATE TABLE User (
+        userID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         username VARCHAR(100),
 		password VARCHAR(100),
 		email VARCHAR(100),
@@ -135,7 +135,6 @@ func createTables(conn *pgx.Conn) error {
 	return nil
 }
 
-
 //populate tables with data using json
-//API functions 
-//HTTP server functions
+//API functions
+//HTTP server functions */

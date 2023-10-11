@@ -1,5 +1,12 @@
 package main
 
+func main() {
+	a := App{}
+	a.Initialize()
+	a.Run("")
+}
+
+/*
 import (
 	"context"
 	"fmt"
@@ -52,4 +59,4 @@ func main() {
 	}
 
 	fmt.Println("Note deleted successfully.")
-}
+} */

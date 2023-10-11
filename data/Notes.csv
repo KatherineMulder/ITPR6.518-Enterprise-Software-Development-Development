@@ -1,0 +1,6 @@
+Note_ID,User_ID,NoteTitle,NoteContent,CompletionDate,CreationDate,Status
+1,2,Meeting,The meeting date is 10/10,10/10/23,08/10/23,none
+2,3,Eat,Time to Eat,10/10/23,07/10/23,completed
+3,4,Haircut,Appointment for Haircut,10/10/23,09/10/23,cancelled
+4,5,Appointment,DR appointment in the afternooon,08/10/23,02/10/23,none
+5,6,Recycling,Dont forget to do the recycling this weekend,12/10/23,01/10/23,none

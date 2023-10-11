@@ -1,0 +1,6 @@
+User_ID,Username,Password,Email,Role,Registration_Date
+1,Fred Jack,password,fred.jack@hotmail.com,Admin,2023-10-10T09:00:00Z
+2,Tom Good,password,tom.good@hotmail.com,Admin,2023-10-10T09:00:00Z
+3,Kate Smith,password,kate.smith@hotmail.com,Viewer,2023-10-10T09:00:00Z
+4,John Key,password,john.key@hotmail.com,Viewer,2023-10-10T09:00:00Z
+5,Alice Arden,password,alice.arden@hotmail.com,Viewer,2023-10-10T09:00:00Z
