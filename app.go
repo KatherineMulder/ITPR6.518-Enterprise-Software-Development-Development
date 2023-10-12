@@ -10,7 +10,7 @@ import (
 	"os/signal"
 	"strconv"
 	"time"
-
+	"github.com/icza/session"
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -87,7 +87,6 @@ func (a *App) initalizeRoutes() {
 	staticFileDirectory := http.Dir("./statics/")
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
-
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
