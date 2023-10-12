@@ -62,6 +62,7 @@ func readData(fileName string) ([][]string, error) {
 
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
+
 	sql := `DROP TABLE IF EXISTS user;
     CREATE TABLE User (
         userID INTEGER PRIMARY KEY NOT NULL, 
