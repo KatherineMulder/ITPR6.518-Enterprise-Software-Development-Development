@@ -142,7 +142,7 @@
             </div>
 
             <form class="w3-container" action="/delete" method="post">
-                <input type="hidden" name="Id" id="costIdToDelete">
+                <input type="hidden" name="NoteID" id="noteIdToDelete">
                 <div class="w3-center">
                     <button class="w3-btn w3-red w3-margin-top w3-margin-bottom" type="submit">Delete</button>
                     <button type="button" class="w3-btn w3-teal w3-margin-top w3-margin-bottom"
@@ -155,20 +155,20 @@
 </div>
 
 <script>
-  function updateCost(e) {
+  function updateNote(e) {
     var editForm = document.getElementById('edit-form');
     // display update form
     editForm.style.display = 'block';
-    // get cost id to update
-    var costId = e.parentNode.parentNode.childNodes[3].innerText;
-    document.getElementById('costIdToUpdate').value = costId;
+    // get Note id to update
+    var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
+    document.getElementById('noteIdToUpdate').value = NoteID;
   }
 
-  function deleteCost(e) {
+  function deleteNote(e) {
     var deleteForm = document.getElementById('delete-form');
     deleteForm.style.display = 'block';
-    var costId = e.parentNode.parentNode.childNodes[3].innerText;
-    document.getElementById('costIdToDelete').value = costId;
+    var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
+    document.getElementById('NoteIdToDelete').value = NoteId;
   }
 </script>
 </body>
