@@ -32,8 +32,8 @@ type App struct {
 	Router   *mux.Router
 	db       *sql.DB
 	bindport string
-	username string
-	role     string
+	//username string
+	//role     string
 }
 
 func (a *App) Initialize() {
@@ -94,6 +94,9 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
 	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
+	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
 	log.Println("Routes established")
 }

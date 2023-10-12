@@ -156,6 +156,7 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
+
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	a.isAuthenticated(w, r)
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
