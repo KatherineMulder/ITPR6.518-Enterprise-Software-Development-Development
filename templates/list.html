@@ -90,7 +90,7 @@
                 <label class="w3-label">Created Date</label>   <!----need to change the day time-->
                 <input class="w3-input" type="datetime-local" name="createDate" value="">
                 <label class="w3-label">Status</label>
-                <input class="w3-input" type="text" name="" value="" step="">
+                <input class="w3-input" type="text" name="status" value="" step="">
                 <label class="w3-label">Completion Date</label> <!----need to change the day time-->
                 <input class="w3-input" type="datetime-local" name="CompletionDate" value="">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
@@ -112,7 +112,7 @@
             </div>
 
             <form class="w3-container" action="/update" method="post">
-                <input type="hidden" name="Id" id="noteIdToUpdate">
+                <input type="hidden" name="NoteID" id="noteIdToUpdate">
                 <label class="w3-label">Note Title</label>
                 <input class="w3-input" type="text" name="NoteTitle" value="">
                 <label class="w3-label">Note Content</label>

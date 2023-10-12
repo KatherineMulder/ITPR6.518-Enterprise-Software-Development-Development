@@ -2,8 +2,10 @@ package main
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/icza/session"
@@ -79,6 +81,81 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 }
 
+func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
+	a.isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	}
+
+	var note Note
+	sess := session.Get(r)
+	note.UserID = sess.CAttr("userID").(int)
+	note.NoteTitle = r.FormValue("NoteTitle")
+	note.NoteContent = r.FormValue("NoteContent")
+	note.CreationDate, err = time.Parse("2006-01-02 15:04", r.FormValue("createDate"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	note.Status = r.FormValue("status")
+
+	stmt, err := a.db.Prepare("INSERT INTO Notes(userID, noteTitle, noteContent, creationDate, completetionDate, status) VALUES($1, $2, $3, $4, $5, $6)")
+
+	if err != nil {
+		log.Printf("Error with Query Prepare")
+		checkInternalServerError(err, w)
+	}
+	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CreationDate, note.CompletionDate, note.Status)
+	if err != nil {
+		log.Printf("Error with Executing Query")
+		checkInternalServerError(err, w)
+	}
+
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
+	a.isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	}
+
+	var note Note
+	note.NoteID, _ = strconv.Atoi(r.FormValue("NoteID"))
+	note.NoteTitle = r.FormValue("NoteTitle")
+	note.NoteContent = r.FormValue("NoteContent")
+	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	note.Status = r.FormValue("status")
+
+	stmt, err := a.db.Prepare("UPDATE Notes SET noteTitle=$1, noteContent=$2, completionDate=$3, status=$4 WHERE noteID=$5")
+	checkInternalServerError(err, w)
+	res, err := stmt.Exec(note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status, note.NoteID)
+	checkInternalServerError(err, w)
+	_, err = res.RowsAffected()
+	checkInternalServerError(err, w)
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
+	a.isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	}
+	var noteID, _ = strconv.ParseInt(r.FormValue("NoteID"), 10, 64)
+	stmt, err := a.db.Prepare("DELETE FROM Notes WHERE noteID=$1")
+	checkInternalServerError(err, w)
+	res, err := stmt.Exec(noteID)
+	checkInternalServerError(err, w)
+	_, err = res.RowsAffected()
+	checkInternalServerError(err, w)
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	a.isAuthenticated(w, r)
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)

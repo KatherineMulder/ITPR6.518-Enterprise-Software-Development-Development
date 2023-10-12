@@ -11,7 +11,7 @@ import (
 
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "templates/register/html")
+		http.ServeFile(w, r, "templates/register.html")
 		return
 	}
 
@@ -20,7 +20,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	role := r.FormValue("role")
 
 	var user User
-	err := a.db.QueryRow("SELECT Username, Password, Role FROM Users WHERE Username=$1", username).Scan(&user.Username, &user.Password, &user.Role)
+	err := a.db.QueryRow("SELECT username, password, role FROM Users WHERE username=$1", username).Scan(&user.Username, &user.Password, &user.Role)
 	switch {
 	case err == sql.ErrNoRows:
 		hashedpassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
