@@ -18,6 +18,7 @@ func GetOutboundIP() string {
 }
 
 func checkInternalServerError(err error, w http.ResponseWriter) {
+	log.Printf("Checking for internal server errors")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

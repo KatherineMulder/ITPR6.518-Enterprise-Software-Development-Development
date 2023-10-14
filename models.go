@@ -32,7 +32,7 @@ type Sharing struct {
 	SharingID        int       `json:"sharingID"`
 	NoteID           int       `json:"noteID"`
 	UserID           int       `json:"userID"`
-	Timestamp        time.Time `json:"timestamp"`
+	Timestamp        time.Time `json:"Timestamp"`
 	WrittingSettings bool      `json:"writingSettings"`
 }
 
@@ -63,44 +63,44 @@ func readData(fileName string) ([][]string, error) {
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
-	sql := `DROP TABLE IF EXISTS user;
-    CREATE TABLE User (
+	sql := `DROP TABLE IF EXISTS "users";
+    CREATE TABLE "users" (
         userID INTEGER PRIMARY KEY NOT NULL, 
         username VARCHAR(100) NOT NULL,
 		password VARCHAR(100) NOT NULL,
 		email VARCHAR(100),
 		role INTEGER DEFAULT 2 NOT NULL,
-		registrationDate DATE DEFAULT CURRENT_TIMESTAMP
+		registration_date TIMESTAMP
     );`
 	_, err := a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("User table created")
+	log.Printf("Users table created")
 
-	sql = `DROP TABLE IF EXISTS notes;
-    CREATE TABLE Notes (
+	sql = `DROP TABLE IF EXISTS "notes";
+    CREATE TABLE "notes" (
         noteID INTEGER PRIMARY KEY NOT NULL,
         userID INTEGER NOT NULL,
-		noteTitle VARCHAR(50) NOT NULL,
-		noteContent TEXT NOT NULL,
-		creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		completionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		status VARCHAR(50) DEFAULT none
+		note_title VARCHAR(50),
+		note_content TEXT NOT NULL,
+		creation_date TIMESTAMP,
+		completion_date TIMESTAMP,
+		status VARCHAR(50)
     );`
 	_, err = a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Notes tble created")
+	log.Printf("Notes table created")
 
-	sql = `DROP TABLE IF EXISTS sharing;
-    CREATE TABLE Sharing (
+	sql = `DROP TABLE IF EXISTS "sharing";
+    CREATE TABLE "sharing" (
 		sharingID INTEGER PRIMARY KEY NOT NULL,
 		noteID INTEGER,
 		userID INTEGER,
-		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		writingSetting BOOL DEFAULT false
+		setup_date TIMESTAMP,
+		writing_setting BOOL
 	);`
 	_, err = a.db.Exec(sql)
 	if err != nil {
@@ -110,7 +110,7 @@ func (a *App) importData() error {
 
 	log.Printf("Inserting Data...")
 
-	stmt, err := a.db.Prepare("INSERT INTO Users VALUES($1,$2,$3,$4,$5,$6)")
+	stmt, err := a.db.Prepare(`INSERT INTO "users" VALUES($1,$2,$3,$4,$5,$6)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -122,15 +122,15 @@ func (a *App) importData() error {
 
 	var u User
 	for _, data := range data {
-		registrationtime, err := time.Parse("2006-01-02 15:04", data[6])
+		registrationtime, err := time.Parse("2006-01-02 15:04", data[5])
 		if err != nil {
 			log.Fatal(err)
 		}
-		u.UserID, _ = strconv.Atoi(data[1])
-		u.Username = data[2]
-		u.Password = data[3]
-		u.Email = data[4]
-		u.Role = data[5]
+		u.UserID, _ = strconv.Atoi(data[0])
+		u.Username = data[1]
+		u.Password = data[2]
+		u.Email = data[3]
+		u.Role = data[4]
 		u.RegistrationDate = registrationtime
 
 		_, err = stmt.Exec(u.UserID, u.Username, u.Password, u.Email, u.Role, u.RegistrationDate)
@@ -139,7 +139,7 @@ func (a *App) importData() error {
 		}
 	}
 
-	stmt, err = a.db.Prepare("INSERT INTO Notes VALUES($1,$2,$3,$4,$5,$6,$7)")
+	stmt, err = a.db.Prepare(`INSERT INTO "notes" VALUES($1,$2,$3,$4,$5,$6,$7)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -151,21 +151,21 @@ func (a *App) importData() error {
 
 	var n Note
 	for _, data := range data {
-		completetime, err := time.Parse("2006-01-02 15:04", data[5])
+		completetime, err := time.Parse("2006-01-02 15:04", data[4])
 		if err != nil {
 			log.Fatal(err)
 		}
-		creationtime, err := time.Parse("2006-01-02 15:04", data[6])
+		creationtime, err := time.Parse("2006-01-02 15:04", data[5])
 		if err != nil {
 			log.Fatal(err)
 		}
-		n.NoteID, _ = strconv.Atoi(data[1])
-		n.UserID, _ = strconv.Atoi(data[2])
-		n.NoteTitle = data[3]
-		n.NoteContent = data[4]
+		n.NoteID, _ = strconv.Atoi(data[0])
+		n.UserID, _ = strconv.Atoi(data[1])
+		n.NoteTitle = data[2]
+		n.NoteContent = data[3]
 		n.CompletionDate = completetime
 		n.CreationDate = creationtime
-		n.Status = data[7]
+		n.Status = data[6]
 
 		_, err = stmt.Exec(n.NoteID, n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.CreationDate, n.Status)
 		if err != nil {
@@ -173,7 +173,7 @@ func (a *App) importData() error {
 		}
 	}
 
-	stmt, err = a.db.Prepare("INSERT INTO Sharing VALUES($1,$2,$3,$4,$5)")
+	stmt, err = a.db.Prepare(`INSERT INTO "sharing" VALUES($1,$2,$3,$4,$5)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -185,17 +185,17 @@ func (a *App) importData() error {
 
 	var s Sharing
 	for _, data := range data {
-		timestamp, err := time.Parse("2006-01-02 15:04", data[4])
+		timestamp, err := time.Parse("2006-01-02 15:04", data[3])
 		if err != nil {
 			log.Fatal(err)
 		}
-		writingsettings, err := strconv.ParseBool(data[5])
+		writingsettings, err := strconv.ParseBool(data[4])
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.SharingID, _ = strconv.Atoi(data[1])
-		s.UserID, _ = strconv.Atoi(data[2])
-		s.NoteID, _ = strconv.Atoi(data[3])
+		s.SharingID, _ = strconv.Atoi(data[0])
+		s.UserID, _ = strconv.Atoi(data[1])
+		s.NoteID, _ = strconv.Atoi(data[2])
 		s.Timestamp = timestamp
 		s.WrittingSettings = writingsettings
 

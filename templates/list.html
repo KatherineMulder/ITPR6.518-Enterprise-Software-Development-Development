@@ -27,12 +27,13 @@
                 </div>
                 <div class="w3-half w3-text-right">
                     <div class="w3-right">
-                        <a href="#" onclick="document.getElementById('create-form').style.display='block'">
-                            <i class="icon ion-ios-plus-outline w3-xxlarge hoverbtn"></i>
-                        </a>
-                        <a href="/logout">
-                            <i class="icon ion-log-out w3-xxlarge hoverbtn"></i>
-                        </a>
+                        <h3 class="w3-left w3-margin=right">Logged in as {{.Username}}</h3>
+                    <a href="#" onclick="document.getElementById('create-form').style.display='block'">
+                        <i class="icon ion-ios-plus-outline w3-xxlarge hoverbtn"></i>
+                    </a>
+                    <a href="/logout">
+                        <i class="icon ion-log-out w3-xxlarge hoverbtn"></i>
+                    </a>
                     </div>
                 </div>
             </div>
@@ -41,16 +42,17 @@
         <table class="w3-table w3-centered w3-border w3-bordered w3-hoverable">
             <thead>
             <tr>
-                <th>Ord</th>
-                <th>ID</th>
-                <th>Note Title</th>
+                <th>Index</th>
+                <th><a href="/list/0">ID</a></th>
+                <th><a href="/list/1">Note Title</a></th>
                 <th>Note Content</th>
-                <th>Created Date</th>
-                <th>Completion Date</th>
-                <th>Status</th>
+                <th><a href="/list/2">Created Date</a></th>
+                <th><a href="/lis/3">Completion Date</a></th>
+                <th><a href="/list/4">Status</a></th>
             </tr>
             </thead>
             <tbody>
+            
             {{range $index, $note := .}}
             <tr>
                 <td>#{{addOne $index}}</td>
@@ -87,11 +89,11 @@
                 <input class="w3-input" type="text" name="NoteTitle" value="">
                 <label class="w3-label">Note Content</label>
                 <input class="w3-input" type="text" name="NoteContent" value="" step="">
-                <label class="w3-label">Created Date</label>   <!----need to change the day time-->
+                <label class="w3-label">Created Date</label>   <!--need to change the day time-->
                 <input class="w3-input" type="datetime-local" name="createDate" value="">
                 <label class="w3-label">Status</label>
                 <input class="w3-input" type="text" name="status" value="" step="">
-                <label class="w3-label">Completion Date</label> <!----need to change the day time-->
+                <label class="w3-label">Completion Date</label> <!--need to change the day time-->
                 <input class="w3-input" type="datetime-local" name="CompletionDate" value="">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
             </form>

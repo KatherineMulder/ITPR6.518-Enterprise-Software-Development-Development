@@ -7,12 +7,12 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	"os/signal"
 	"strconv"
 	"time"
-	"github.com/icza/session"
+
 	"github.com/gorilla/mux"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -38,24 +38,6 @@ type App struct {
 }
 
 func (a *App) Initialize() {
-
-	//database connection 
-	psqInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-	log.Printf("Connecting to PostgresSQL Server")
-	log.Println(psqInfo)
-	db, err := sql.Open("pgx", psqInfo)
-	a.db = db
-	//a.importData()
-
-	// Initialize the session manager
-    session.Global.Close()
-    session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
-
-	a.Router = mux.NewRouter()
-	a.initalizeRoutes()
-
-	//bindport := "8080"
 	a.bindport = "8080"
 
 	tempport := os.Getenv("PORT")
@@ -63,6 +45,22 @@ func (a *App) Initialize() {
 		a.bindport = tempport
 	}
 
+	if len(os.Args) > 1 {
+		s := os.Args[1]
+
+		if _, err := strconv.ParseInt(s, 10, 64); err == nil {
+			log.Printf("Connected to port %s", s)
+			a.bindport = s
+		}
+	}
+
+	//database connection
+	psqInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	log.Printf("Connecting to PostgresSQL Server")
+	log.Println(psqInfo)
+	db, err := sql.Open("pgx", psqInfo)
+	a.db = db
+	//a.importData()
 	if err != nil {
 		log.Println("Either missing github.com/lib/pq or Invalid DB arguements")
 		log.Fatal(err)
@@ -83,19 +81,26 @@ func (a *App) Initialize() {
 
 	a.setupAuth()
 
-
-	if len(os.Args) > 1 {
-		s := os.Args[1]
-
-		if _, err := strconv.ParseInt(s, 10, 64); err == nil {
-			log.Printf("Connected to port %s", s)
-			a.bindport = s
-		}
-	}
-
-	
+	a.Router = mux.NewRouter()
+	a.initalizeRoutes()
 }
 
+func (a *App) initalizeRoutes() {
+	staticFileDirectory := http.Dir("./statics/")
+	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
+	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
+
+	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
+	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
+	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
+	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
+	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
+	log.Println("Routes established")
+}
 
 func (a *App) Run(addr string) {
 	if addr != "" {
@@ -103,7 +108,8 @@ func (a *App) Run(addr string) {
 	}
 
 	ip := GetOutboundIP()
-
+	log.Println(ip)
+	log.Println(a.bindport)
 	log.Printf("Starting EnterpriseNotes via HTTP Services at http://%s:%s", ip, a.bindport)
 
 	srv := &http.Server{

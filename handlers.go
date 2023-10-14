@@ -16,7 +16,14 @@ type Data struct {
 	Notes    []Note
 }
 
+func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("index")
+	a.isAuthenticated(w, r)
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
+}
+
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("list")
 	a.isAuthenticated(w, r)
 
 	sess := session.Get(r)
@@ -42,17 +49,15 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch sortcol {
 	case 1:
-		SQL = "SELECT * FROM Notes ORDER by userID"
+		SQL = `SELECT * FROM "notes" ORDER by note_title`
 	case 2:
-		SQL = "SELECT * FROM Notes ORDER by noteTitle"
+		SQL = `SELECT * FROM "notes" ORDER by creation_date`
 	case 3:
-		SQL = "SELECT * FROM Notes ORDER by creationDate"
+		SQL = `SELECT * FROM "notes" ORDER by completion_date`
 	case 4:
-		SQL = "SELECT * FROM Notes ORDER by completionDate"
-	case 5:
-		SQL = "SELECT * FROM Notes ORDER by status"
+		SQL = `SELECT * FROM "notes" ORDER by status`
 	default:
-		SQL = "SELECT * FROM Notes ORDER by noteID"
+		SQL = `SELECT * FROM "notes" ORDER by noteID`
 	}
 
 	rows, err := a.db.Query(SQL)
@@ -82,6 +87,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("create")
 	a.isAuthenticated(w, r)
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
@@ -102,7 +108,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	note.Status = r.FormValue("status")
 
-	stmt, err := a.db.Prepare("INSERT INTO Notes(userID, noteTitle, noteContent, creationDate, completetionDate, status) VALUES($1, $2, $3, $4, $5, $6)")
+	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creation_date, completetion_date, status) VALUES($1, $2, $3, $4, $5, $6)`)
 
 	if err != nil {
 		log.Printf("Error with Query Prepare")
@@ -118,6 +124,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("update")
 	a.isAuthenticated(w, r)
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
@@ -133,7 +140,7 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	note.Status = r.FormValue("status")
 
-	stmt, err := a.db.Prepare("UPDATE Notes SET noteTitle=$1, noteContent=$2, completionDate=$3, status=$4 WHERE noteID=$5")
+	stmt, err := a.db.Prepare(`UPDATE "notes" SET note_title=$1, note_content=$2, completion_date=$3, status=$4 WHERE noteID=$5`)
 	checkInternalServerError(err, w)
 	res, err := stmt.Exec(note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status, note.NoteID)
 	checkInternalServerError(err, w)
@@ -143,21 +150,17 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Delete")
 	a.isAuthenticated(w, r)
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 	var noteID, _ = strconv.ParseInt(r.FormValue("NoteID"), 10, 64)
-	stmt, err := a.db.Prepare("DELETE FROM Notes WHERE noteID=$1")
+	stmt, err := a.db.Prepare(`DELETE FROM "notes" WHERE noteID=$1`)
 	checkInternalServerError(err, w)
 	res, err := stmt.Exec(noteID)
 	checkInternalServerError(err, w)
 	_, err = res.RowsAffected()
 	checkInternalServerError(err, w)
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
-}
-
-func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
-	a.isAuthenticated(w, r)
-	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }

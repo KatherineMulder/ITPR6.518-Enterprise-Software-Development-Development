@@ -10,6 +10,7 @@ import (
 )
 
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Register")
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "templates/register.html")
 		return
@@ -20,12 +21,12 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	role := r.FormValue("role")
 
 	var user User
-	err := a.db.QueryRow("SELECT username, password, role FROM Users WHERE username=$1", username).Scan(&user.Username, &user.Password, &user.Role)
+	err := a.db.QueryRow(`SELECT username, password, role FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password, &user.Role)
 	switch {
 	case err == sql.ErrNoRows:
 		hashedpassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
-		_, err = a.db.Exec("INSERT INTO Users(username, password, role) VALUES($1, $2, $3)", username, hashedpassword, role)
+		_, err = a.db.Exec(`INSERT INTO "users"(username, password, role) VALUES($1, $2, $3)`, username, hashedpassword, role)
 		checkInternalServerError(err, w)
 	case err != nil:
 		http.Error(w, "loi: "+err.Error(), http.StatusBadRequest)
@@ -36,9 +37,10 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Login")
 	log.Printf("Method %s", r.Method)
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "template/login.html")
+		http.ServeFile(w, r, "templates/login.html")
 		return
 	}
 
@@ -46,7 +48,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	var user User
-	err := a.db.QueryRow("SELECT UserID, Username, Password FROM Users WHERE Username=$1", username).Scan(&user.UserID, &user.Username, &user.Password)
+	err := a.db.QueryRow(`SELECT userID, username, password FROM "users" WHERE username=$1`, username).Scan(&user.UserID, &user.Username, &user.Password)
 	checkInternalServerError(err, w)
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -65,6 +67,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("logout")
 	s := session.Get(r)
 	log.Printf("User %s", s.CAttr("username").(string))
 	session.Remove(s, w)
@@ -74,6 +77,7 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Authrntication")
 	authenticated := false
 
 	sess := session.Get(r)
@@ -81,13 +85,14 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	if sess != nil {
 		u := sess.CAttr("username").(string)
 		c := sess.Attr("count").(int)
-
 		if c > 0 && len(u) > 0 {
+			log.Printf("Authentication passed")
 			authenticated = true
 		}
 	}
 
 	if !authenticated {
+		log.Printf("Authentication failed")
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }

@@ -1,1 +1,1 @@
-web: EnterpriseNote
+web: EnterpriseNotes
