@@ -62,7 +62,7 @@ func (a *App) importData() error {
 
 	sql := `DROP TABLE IF EXISTS "users";
     CREATE TABLE "users" (
-        userID INTEGER PRIMARY KEY NOT NULL, 
+        userID SERIAL PRIMARY KEY, 
         username VARCHAR(100) NOT NULL,
 		password VARCHAR(100) NOT NULL,
 		email VARCHAR(100)
@@ -75,7 +75,7 @@ func (a *App) importData() error {
 
 	sql = `DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
-        noteID INTEGER PRIMARY KEY NOT NULL,
+        noteID SERIAL PRIMARY KEY,
         userID INTEGER NOT NULL,
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
@@ -91,7 +91,7 @@ func (a *App) importData() error {
 	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
 	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
-		sharingID INTEGER PRIMARY KEY NOT NULL,
+		sharingID SERIAL PRIMARY KEY,
 		noteID INTEGER,
 		userID INTEGER,
 		setup_date TIMESTAMP,

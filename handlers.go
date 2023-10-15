@@ -68,15 +68,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(rows)
 
 	checkInternalServerError(err, w)
-	/*var funcMap = template.FuncMap{
-		"multiplication": func(n int, f int) int {
-			return n * f
-		},
+	var funcMap = template.FuncMap{
 		"addOne": func(n int) int {
 			return n + 1
 		},
 	}
-	log.Println(funcMap)*/
+	log.Println(funcMap)
 
 	data := Data{}
 	log.Println(data)
@@ -86,16 +83,17 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	var note Note
 	log.Println(note)
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
+		err = rows.Scan(&note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
 		log.Println(err)
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
 		log.Println(data)
 	}
-	t, err := template.New("list.html").ParseFiles("templates/list.html")
+	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
 	log.Println(t)
 	checkInternalServerError(err, w)
 	err = t.Execute(w, data)
+	log.Println(t)
 	checkInternalServerError(err, w)
 }
 

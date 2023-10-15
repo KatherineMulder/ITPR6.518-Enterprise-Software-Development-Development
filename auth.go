@@ -12,26 +12,25 @@ import (
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "templates/register.html")
+		http.ServeFile(w, r, "tmpl/register.html")
 		return
 	}
 
 	//user information
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	role := r.FormValue("role")
 
 	// Check existence of user
 	var user User
 	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password)
 	switch {
-	// user is availabl
+	// user is available
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
 		// insert to database
-		_, err = a.db.Exec(`INSERT INTO "users"(username, password, role) VALUES($1, $2, $3)`,
-			username, hashedPassword, role)
+		_, err = a.db.Exec(`INSERT INTO "users"(username, password) VALUES($1, $2)`,
+			username, hashedPassword)
 		checkInternalServerError(err, w)
 	case err != nil:
 		http.Error(w, "loi: "+err.Error(), http.StatusBadRequest)
@@ -45,7 +44,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Method %s", r.Method)
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "templates/login.html")
+		http.ServeFile(w, r, "tmpl/login.html")
 		return
 	}
 

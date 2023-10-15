@@ -42,8 +42,7 @@
         <table class="w3-table w3-centered w3-border w3-bordered w3-hoverable">
             <thead>
             <tr>
-                <th>Index</th>
-                <th><a href="/list/0">ID</a></th>
+                <th><a href="/list/0">UserID</a></th>
                 <th><a href="/list/1">Note Title</a></th>
                 <th>Note Content</th>
                 <th><a href="/lis/3">Completion Date</a></th>
@@ -52,12 +51,11 @@
             </thead>
             <tbody>
             
-            {{range $index, $note := .Notes}}
+            {{range $note := .Notes}}
             <tr>
-                <td>{{$note.NoteID}}</td>
                 <td>{{$note.UserID}}</td>
                 <td>{{$note.NoteTitle}}</td>
-                <td>{{<!--Content-->$note.NoteContent}}</td>
+                <td>{{$note.NoteContent}}</td>
                 <td>{{$note.CompletionDate}}</td>
                 <td>{{$note.Status}}</td>
                 <td>
