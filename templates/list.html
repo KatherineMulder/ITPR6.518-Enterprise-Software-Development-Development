@@ -46,20 +46,18 @@
                 <th><a href="/list/0">ID</a></th>
                 <th><a href="/list/1">Note Title</a></th>
                 <th>Note Content</th>
-                <th><a href="/list/2">Created Date</a></th>
                 <th><a href="/lis/3">Completion Date</a></th>
                 <th><a href="/list/4">Status</a></th>
             </tr>
             </thead>
             <tbody>
             
-            {{range $index, $note := .}}
+            {{range $index, $note := .Notes}}
             <tr>
-                <td>#{{addOne $index}}</td>
-                <td>{{$note.Id}}</td>
-                <td>{{$note.Title}}</td>
-                <td>{{Content $note.Content}}</td>
-                <td>{{$note.CreatedDate}}</td>
+                <td>{{$note.NoteID}}</td>
+                <td>{{$note.UserID}}</td>
+                <td>{{$note.NoteTitle}}</td>
+                <td>{{<!--Content-->$note.NoteContent}}</td>
                 <td>{{$note.CompletionDate}}</td>
                 <td>{{$note.Status}}</td>
                 <td>

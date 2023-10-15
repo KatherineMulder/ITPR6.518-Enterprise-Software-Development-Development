@@ -23,7 +23,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check existence of user
 	var user User
-	err := a.db.QueryRow(`SELECT username, password, role FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password, &user.Role)
+	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password)
 	switch {
 	// user is availabl
 	case err == sql.ErrNoRows:
@@ -50,8 +50,10 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//user info from the submitted form
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	username := r.FormValue("usrname")
+	log.Println(username)
+	password := r.FormValue("psw")
+	log.Println(password)
 
 	// query database to get match username
 	var user User
@@ -60,9 +62,18 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	log.Println(user.Password)
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
-		return
+		if password == user.Password {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+			checkInternalServerError(err, w)
+			// insert to database
+			_, err = a.db.Exec(`UPDATE "users" SET password=$1 WHERE username=$2`, hashedPassword, username)
+			checkInternalServerError(err, w)
+		} else {
+			http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+			return
+		}
 	}
 
 	sess := session.NewSessionOptions(&session.SessOptions{
@@ -86,7 +97,6 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Authrntication")
 	authenticated := false
 
 	sess := session.Get(r)
@@ -102,7 +112,6 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !authenticated {
-		log.Printf("Authentication failed")
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }

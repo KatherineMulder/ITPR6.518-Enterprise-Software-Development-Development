@@ -14,26 +14,23 @@ type Note struct {
 	UserID         int       `json:"userID"`
 	NoteTitle      string    `json:"noteTitle"`
 	NoteContent    string    `json:"noteContent"`
-	CreationDate   time.Time `json:"creationDate"`
 	CompletionDate time.Time `json:"completionDate"`
 	Status         string    `json:"status"`
 }
 
 type User struct {
-	UserID           int       `json:"userID"`
-	Username         string    `json:"username"`
-	Password         string    `json:"password"`
-	Email            string    `json:"email"`
-	Role             string    `json:"role"`
-	RegistrationDate time.Time `json:"registrationDate"`
+	UserID   int    `json:"userID"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
 type Sharing struct {
-	SharingID        int       `json:"sharingID"`
-	NoteID           int       `json:"noteID"`
-	UserID           int       `json:"userID"`
-	Timestamp        time.Time `json:"Timestamp"`
-	WrittingSettings bool      `json:"writingSettings"`
+	SharingID int       `json:"sharingID"`
+	NoteID    int       `json:"noteID"`
+	UserID    int       `json:"userID"`
+	Timestamp time.Time `json:"timestamp"`
+	status    string    `json:"status"`
 }
 
 func readData(fileName string) ([][]string, error) {
@@ -68,9 +65,7 @@ func (a *App) importData() error {
         userID INTEGER PRIMARY KEY NOT NULL, 
         username VARCHAR(100) NOT NULL,
 		password VARCHAR(100) NOT NULL,
-		email VARCHAR(100),
-		role INTEGER DEFAULT 2 NOT NULL,
-		registration_date TIMESTAMP
+		email VARCHAR(100)
     );`
 	_, err := a.db.Exec(sql)
 	if err != nil {
@@ -84,7 +79,6 @@ func (a *App) importData() error {
         userID INTEGER NOT NULL,
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
-		creation_date TIMESTAMP,
 		completion_date TIMESTAMP,
 		status VARCHAR(50)
     );`
@@ -94,13 +88,14 @@ func (a *App) importData() error {
 	}
 	log.Printf("Notes table created")
 
-	sql = `DROP TABLE IF EXISTS "sharing";
+	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
+	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
 		sharingID INTEGER PRIMARY KEY NOT NULL,
 		noteID INTEGER,
 		userID INTEGER,
 		setup_date TIMESTAMP,
-		writing_setting BOOL
+		status sharing_status
 	);`
 	_, err = a.db.Exec(sql)
 	if err != nil {
@@ -110,7 +105,7 @@ func (a *App) importData() error {
 
 	log.Printf("Inserting Data...")
 
-	stmt, err := a.db.Prepare(`INSERT INTO "users" VALUES($1,$2,$3,$4,$5,$6)`)
+	stmt, err := a.db.Prepare(`INSERT INTO "users" VALUES($1,$2,$3,$4)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -122,24 +117,18 @@ func (a *App) importData() error {
 
 	var u User
 	for _, data := range data {
-		registrationtime, err := time.Parse("2006-01-02 15:04", data[5])
-		if err != nil {
-			log.Fatal(err)
-		}
 		u.UserID, _ = strconv.Atoi(data[0])
 		u.Username = data[1]
 		u.Password = data[2]
 		u.Email = data[3]
-		u.Role = data[4]
-		u.RegistrationDate = registrationtime
 
-		_, err = stmt.Exec(u.UserID, u.Username, u.Password, u.Email, u.Role, u.RegistrationDate)
+		_, err = stmt.Exec(u.UserID, u.Username, u.Password, u.Email)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	stmt, err = a.db.Prepare(`INSERT INTO "notes" VALUES($1,$2,$3,$4,$5,$6,$7)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "notes" VALUES($1,$2,$3,$4,$5,$6)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -155,19 +144,14 @@ func (a *App) importData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		creationtime, err := time.Parse("2006-01-02 15:04", data[5])
-		if err != nil {
-			log.Fatal(err)
-		}
 		n.NoteID, _ = strconv.Atoi(data[0])
 		n.UserID, _ = strconv.Atoi(data[1])
 		n.NoteTitle = data[2]
 		n.NoteContent = data[3]
 		n.CompletionDate = completetime
-		n.CreationDate = creationtime
-		n.Status = data[6]
+		n.Status = data[5]
 
-		_, err = stmt.Exec(n.NoteID, n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.CreationDate, n.Status)
+		_, err = stmt.Exec(n.NoteID, n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.Status)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -189,17 +173,13 @@ func (a *App) importData() error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		writingsettings, err := strconv.ParseBool(data[4])
-		if err != nil {
-			log.Fatal(err)
-		}
 		s.SharingID, _ = strconv.Atoi(data[0])
 		s.UserID, _ = strconv.Atoi(data[1])
 		s.NoteID, _ = strconv.Atoi(data[2])
 		s.Timestamp = timestamp
-		s.WrittingSettings = writingsettings
+		s.status = data[4]
 
-		_, err = stmt.Exec(s.SharingID, s.UserID, s.NoteID, s.Timestamp, s.WrittingSettings)
+		_, err = stmt.Exec(s.SharingID, s.UserID, s.NoteID, s.Timestamp, s.status)
 		if err != nil {
 			log.Fatal(err)
 		}

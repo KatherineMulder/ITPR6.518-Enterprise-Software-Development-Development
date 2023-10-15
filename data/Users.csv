@@ -1,6 +1,6 @@
-User_ID,Username,Password,Email,Role,Registration_Date
-1,Fred Jack,password,fred.jack@hotmail.com,1,2023-10-10 12:00
-2,Tom Good,password,tom.good@hotmail.com,1,2023-10-10 12:00
-3,Kate Smith,password,kate.smith@hotmail.com,2,2023-10-10 12:00
-4,John Key,password,john.key@hotmail.com,2,2023-10-10 12:00
-5,Alice Arden,password,alice.arden@hotmail.com,2,2023-10-10 12:00
+User_ID,Username,Password,Email
+1,Fred Jack,password,fred.jack@hotmail.com
+2,Tom Good,password,tom.good@hotmail.com
+3,Kate Smith,password,kate.smith@hotmail.com
+4,John Key,password,john.key@hotmail.com
+5,Alice Arden,password,alice.arden@hotmail.com

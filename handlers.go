@@ -27,7 +27,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	a.isAuthenticated(w, r)
 
 	sess := session.Get(r)
+	log.Println(sess)
 	user := "[guest]"
+	log.Println(user)
 
 	if sess != nil {
 		user = sess.CAttr("username").(string)
@@ -38,7 +40,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := mux.Vars(r)
+	log.Println(params)
 	sortcol, err := strconv.Atoi(params["srt"])
+	log.Println(sortcol)
 
 	_, ok := params["srt"]
 	if ok && err != nil {
@@ -46,7 +50,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	SQL := ""
-
+	log.Println(SQL)
 	switch sortcol {
 	case 1:
 		SQL = `SELECT * FROM "notes" ORDER by note_title`
@@ -59,10 +63,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		SQL = `SELECT * FROM "notes" ORDER by noteID`
 	}
-
+	log.Println(SQL)
 	rows, err := a.db.Query(SQL)
+	log.Println(rows)
+
 	checkInternalServerError(err, w)
-	var funcMap = template.FuncMap{
+	/*var funcMap = template.FuncMap{
 		"multiplication": func(n int, f int) int {
 			return n * f
 		},
@@ -70,17 +76,24 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 			return n + 1
 		},
 	}
+	log.Println(funcMap)*/
 
 	data := Data{}
+	log.Println(data)
 	data.Username = user
+	log.Println(data)
 
 	var note Note
+	log.Println(note)
 	for rows.Next() {
-		err = rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.CompletionDate, &note.Status)
+		err = rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
+		log.Println(err)
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
+		log.Println(data)
 	}
-	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("templates/list.html")
+	t, err := template.New("list.html").ParseFiles("templates/list.html")
+	log.Println(t)
 	checkInternalServerError(err, w)
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
@@ -98,7 +111,6 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	note.UserID = sess.CAttr("userID").(int)
 	note.NoteTitle = r.FormValue("NoteTitle")
 	note.NoteContent = r.FormValue("NoteContent")
-	note.CreationDate, err = time.Parse("2006-01-02 15:04", r.FormValue("createDate"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +126,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error with Query Prepare")
 		checkInternalServerError(err, w)
 	}
-	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CreationDate, note.CompletionDate, note.Status)
+	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status)
 	if err != nil {
 		log.Printf("Error with Executing Query")
 		checkInternalServerError(err, w)
