@@ -10,17 +10,16 @@ import (
 )
 
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "templates/register.html")
 		return
 	}
 
-	//user information 
+	//user information
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 	role := r.FormValue("role")
-
 
 	// Check existence of user
 	var user User
@@ -31,7 +30,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
 		// insert to database
-		_, err = a.db.Exec(`INSERT INTO users(username, password, role) VALUES($1, $2, $3)`,
+		_, err = a.db.Exec(`INSERT INTO "users"(username, password, role) VALUES($1, $2, $3)`,
 			username, hashedPassword, role)
 		checkInternalServerError(err, w)
 	case err != nil:
@@ -43,38 +42,26 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	log.Printf("Method %s", r.Method)
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "templates/login.html")
 		return
 	}
 
-
 	//user info from the submitted form
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-
 
 	// query database to get match username
 	var user User
 	err := a.db.QueryRow(`SELECT userID, username, password FROM "users" WHERE username=$1`, username).Scan(&user.UserID, &user.Username, &user.Password)
 	checkInternalServerError(err, w)
 
-	// validate password
-		/*
-			//simple unencrypted method
-			if user.Password != password {
-				http.Redirect(w, r, "/login", 301)
-				return
-			}
-		*/
-
-
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		http.Redirect(w, r, "/login", 301)
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 		return
 	}
 
@@ -84,19 +71,18 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	session.Add(sess, w)
 
-	http.Redirect(w, r, "/list", 301)
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
 
-
 func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	// get the current session variables
 	s := session.Get(r)
 	log.Printf("User %s", s.CAttr("username").(string))
 	session.Remove(s, w)
 	s = nil
 
-	http.Redirect(w, r, "/login", 301)
+	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +103,7 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 
 	if !authenticated {
 		log.Printf("Authentication failed")
-		http.Redirect(w, r, "/login", 301)
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }
 

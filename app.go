@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strconv"
 	"time"
+
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -31,14 +32,10 @@ type App struct {
 	Router   *mux.Router
 	db       *sql.DB
 	bindport string
-	username string
-	role     string
-	
 }
 
-
 func (a *App) Initialize() {
-	a.bindport = "80"
+	a.bindport = "8080"
 
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
@@ -99,7 +96,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
-	
+
 	log.Println("Routes established")
 }
 
