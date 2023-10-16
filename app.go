@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
-
+// Constants for database connection
 const (
 	host     = "localhost"
 	port     = 5432
@@ -28,12 +28,14 @@ var (
 	wait time.Duration
 )
 
+// App represents the main application.
 type App struct {
 	Router   *mux.Router
 	db       *sql.DB
 	bindport string
 }
 
+// Initialize initializes the application.
 func (a *App) Initialize() {
 	a.bindport = "8080"
 
@@ -82,6 +84,7 @@ func (a *App) Initialize() {
 	a.initalizeRoutes()
 }
 
+// initalizeRoutes initializes the application routes.
 func (a *App) initalizeRoutes() {
 	staticFileDirectory := http.Dir("./statics/")
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
@@ -100,6 +103,7 @@ func (a *App) initalizeRoutes() {
 	log.Println("Routes established")
 }
 
+// Run starts the application.
 func (a *App) Run(addr string) {
 	if addr != "" {
 		a.bindport = addr

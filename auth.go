@@ -9,36 +9,45 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//// The registerHandler handles user registration.
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
+ 	// Serve the registration form if the request method is not POST
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/register.html")
 		return
 	}
 
-	//user information
+	// Extract user information from the form
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	// Check existence of user
+
+	// Check if the user already exists in the database
 	var user User
 	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password)
 	switch {
 	// user is available
 	case err == sql.ErrNoRows:
+
+		// User is not found, so we hash the password and insert it into the database
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
+
 		// insert to database
 		//a.db.Exec(`SELECT setval(pg_get_serial_sequence('users', 'userid'), coalesce(max(id),0) + 1, false) FROM t1;`)
 		_, err = a.db.Exec(`INSERT INTO "users"(username, password) VALUES($1, $2)`,
 			username, hashedPassword)
 		checkInternalServerError(err, w)
 	case err != nil:
+		 // An error occurred during the database query
 		http.Error(w, "loi: "+err.Error(), http.StatusBadRequest)
 		return
 	default:
+		 // User already exists, redirect to the login page
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
+	// Redirect to the login page after registration
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
@@ -77,12 +86,14 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+ 	// Create and store a session
 	sess := session.NewSessionOptions(&session.SessOptions{
 		CAttrs: map[string]interface{}{"username": user.Username, "userid": user.UserID},
 		Attrs:  map[string]interface{}{"count": 1},
 	})
 	session.Add(sess, w)
 
+	// Redirect to the list page after successful login
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
 
@@ -94,9 +105,11 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session.Remove(s, w)
 	s = nil
 
+	// Redirect to the login page after logout
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
+// The isAuthenticated function checks if the user is authenticated.
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	authenticated := false
 
@@ -111,13 +124,15 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 			authenticated = true
 		}
 	}
-
+ 	// Redirect to the login page if the user is not authenticated
 	if !authenticated {
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }
 
 func (a *App) setupAuth() {
+	
+	// Set up session management
 	session.Global.Close()
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }

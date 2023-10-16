@@ -33,6 +33,8 @@ type Sharing struct {
 	status    string    `json:"status"`
 }
 
+
+// Read data from csv file
 func readData(fileName string) ([][]string, error) {
 	f, err := os.Open(fileName)
 
@@ -57,6 +59,7 @@ func readData(fileName string) ([][]string, error) {
 	return records, nil
 }
 
+////////creating tables in a PostgreSQL database and inserting data into them./////// 
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
@@ -98,59 +101,71 @@ func (a *App) importData() error {
 		setup_date TIMESTAMP,
 		status sharing_status
 	);`
+
+	//executes a SQL command used to discard the result from the database query, If an error occurs  it will be logged using log.Fatal(err).
 	_, err = a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Sharing Table created")
 
+	log.Printf("Sharing Table created")
 	log.Printf("Inserting Data...")
 
+
+	// inserting data into the "users" table
 	stmt, err := a.db.Prepare(`INSERT INTO "users"(username, password, email) VALUES($1,$2,$3)`)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+
+	//readData function is used to read the data from the CSV file and store it in a slice of slices of strings.
 	data, err := readData("data/Users.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	/////hold the data from the CSV file before insertion into the "users" table.///////
 	var u User
+	//range over the data slice and assign the values to the User struct.
 	for _, data := range data {
 		u.Username = data[0]
 		u.Password = data[1]
 		u.Email = data[2]
 
+	//execute the SQL statement and pass the values from the User struct as arguments.
 		_, err = stmt.Exec(u.Username, u.Password, u.Email)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	//inserting data into the "notes" table
 	stmt, err = a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, completion_date, status) VALUES($1,$2,$3,$4,$5)`)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	//readData function is used to read the data from the CSV file and store it in a slice of slices of strings.
 	data, err = readData("data/Notes.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {
-		completetime := time.Now()
-		if data[4] != "None" {
-			completetime, err = time.Parse("2006-01-02 15:04", data[3])
+		completetime := time.Now() 
+		if data[4] != "None" { 
+			completetime, err = time.Parse("2006-01-02 15:04", data[3]) 
 			if err != nil {
 				log.Fatal(err)
 			}
 
 		}
-		n.UserID, _ = strconv.Atoi(data[0])
-		n.NoteTitle = data[1]
-		n.NoteContent = data[2]
+		n.UserID, _ = strconv.Atoi(data[0]) //converts the string to an integer
+		n.NoteTitle = data[1] 
+		n.NoteContent = data[2] 
 		n.CompletionDate = completetime
 		n.Status = data[4]
 
@@ -170,6 +185,7 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
+	/////insertion into the "sharing" table.///////
 	var s Sharing
 	for _, data := range data {
 		timestamp, err := time.Parse("2006-01-02 15:04", data[2])

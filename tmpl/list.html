@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/statics/ionicons/css/w3.css">
     <link rel="stylesheet" href="/statics/ionicons/css/ionicons.min.css">
-    <title>Notes</title>
+    <title>Enterprise Notes</title>
     <style>
         .hoverbtn:hover {
             font-weight: bold;
             opacity: 0.4;
+            font-size: 14px;
         }
 
         a {
             text-decoration: none;
         }
+
+        .custom-textarea {
+            border: 2px solid #000; 
+            border-radius: 5px; 
+            padding: 10px; }
     </style>
 </head>
 <body>
@@ -23,7 +29,13 @@
         <header class="w3-container w3-center w3-teal">
             <div class="w3-row">
                 <div class="w3-half">
-                    <h3 class="w3-right">Listing Notes</h3>
+                    <div class="w3-left">
+                    <!--settings icon -->
+                    <a href="#">
+                        <i class="icon ion-gear-a w3-xxlarge hoverbtn fa fa-gear" onclick="openSettings()"></i>
+                     </a>
+                    </div>
+                    <h3 class="w3-right">Notes</h3>
                 </div>
                 <div class="w3-half w3-text-right">
                     <div class="w3-right">
@@ -34,15 +46,21 @@
                     <a href="/logout">
                         <i class="icon ion-log-out w3-xxlarge hoverbtn"></i>
                     </a>
-                    </div>
+                     <!-- search icon on the right -->
+                     <a href="#">
+                        <i class="icon ion-search w3-xxlarge hoverbtn" onclick="openSearch()"></i>
+                    </a>
+
+                     
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
         <table class="w3-table w3-centered w3-border w3-bordered w3-hoverable">
             <thead>
             <tr>
-                <th><a href="/list/0">UserID</a></th>
+                <th><a href="/list/0">UserID</a></th>  <!--maybe change userID to display user name-->
                 <th><a href="/list/1">Note Title</a></th>
                 <th>Note Content</th>
                 <th><a href="/lis/3">Completion Date</a></th>
@@ -81,17 +99,30 @@
             </div>
 
             <form class="w3-container" action="/create" method="post">
-                <label class="w3-label">Note Title</label>
+                <label class="w3-label" style="font-size: large;">Note Title: </label>
                 <input class="w3-input" type="text" name="NoteTitle" value="">
-                <label class="w3-label">Note Content</label>
-                <input class="w3-input" type="text" name="NoteContent" value="" step="">
-                <label class="w3-label">Created Date</label>   <!--need to change the day time-->
-                <input class="w3-input" type="datetime-local" name="createDate" value="">
-                <label class="w3-label">Status</label>
-                <input class="w3-input" type="text" name="status" value="" step="">
-                <label class="w3-label">Completion Date</label> <!--need to change the day time-->
-                <input class="w3-input" type="datetime-local" name="CompletionDate" value="">
+
+                <label class="w3-label" style="font-size: large;">Note Content:</label>
+                <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
+
+                <label class="w3-label" style="font-size: large;">Created Date:</label> 
+                <input class="w3-input" type="date" name="createDate" id="date"value="">
+
+                <label class="w3-label" style="font-size: large;">Status:</label>
+                <select class="w3-select" name="status">
+                    <option value="none">None</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="delegated">Delegated</option>
+                  </select>
+
+                <label class="w3-label" style="font-size: large;" >Completion Date:</label>
+                <input class="w3-input" type="date" name="CompletionDate" id ="date" value="">
+
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
+
+                <label class="w3-label" style="font-size: large;">Delegated to:</label> 
             </form>
         </div>
     </div>
@@ -104,61 +135,109 @@
         <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
             <!-- head -->
             <div class="w3-container w3-teal">
-                <h2>Edit Note</h2>
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
-            </div>
 
-            <form class="w3-container" action="/update" method="post">
-                <input type="hidden" name="NoteID" id="noteIdToUpdate">
-                <label class="w3-label">Note Title</label>
-                <input class="w3-input" type="text" name="NoteTitle" value="">
-                <label class="w3-label">Note Content</label>
-                <input class="w3-input" type="text" name="NoteContent" value="" step="">
-                <label class="w3-label">Create Date</label>
-                <input class="w3-input" type="datetime-local" name="CreatedDate" value="">
-                <label class="w3-label">Status</label>
-                <input class="w3-input" type="text" name="status" value="" step="">
-                <label class="w3-label">Completion Date</label>
-                <input class="w3-input" type="datetime-local" name="CompletionDate" value="">
-                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
-            </form>
-        </div>
-    </div>
-</div>
+                      <div class="w3-row">
+                        <h2 style="text-align: center;">Task</h2>
+                        <div class="w3-half">
+                          <p>Note Title: <span id="note-title"></span></p>
+                        </div>
+                        <div class="w3-half w3-text-right">
+                          <p>User Name: <span id="user-name"></span></p>
+                        </div>
+                      </div>
+                    </div>
+                    <form class="w3-container" action="/update" method="post">
+                            <!-- Search Bar -->
+                    <div class="w3-row">
+                        <div class="w3-half">
+                        <input class="w3-input w3-panel w3-border w3-round-xxlarge" type="text" placeholder="Search Note Title">
+                        </div>
+                        <div class="w3-half w3-text-right">
+                        <input class="w3-input w3-panel w3-border w3-round-xxlarge" type="text" placeholder="Search User Name">
+                        </div>
+                    </div><br>
 
+                        <label class="w3-label" style="font-size: large;">Note Content:</label>
+                        <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
 
-<!-- Delete Modals -->
-<div class="w3-container">
-    <div id="delete-form" class="w3-modal">
-        <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
-            <!-- head -->
-            <div class="w3-container w3-teal">
-                <h2>Delete Note?</h2>
-                <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright"
-                      onclick="document.getElementById('delete-form').style.display='none'">&times;</span>
-            </div>
+                        <label class="w3-label" style="font-size: large;">Delegated to:</label><br>
 
-            <form class="w3-container" action="/delete" method="post">
-                <input type="hidden" name="NoteID" id="noteIdToDelete">
-                <div class="w3-center">
-                    <button class="w3-btn w3-red w3-margin-top w3-margin-bottom" type="submit">Delete</button>
-                    <button type="button" class="w3-btn w3-teal w3-margin-top w3-margin-bottom"
-                            onclick="document.getElementById('delete-form').style.display='none'">Cancel
-                    </button>
+                        <div class="w3-row">
+                            <div class="w3-half" style="display: inline-block;">
+                                <input class="w3-input" type="text" name="delegatedTo" placeholder="Enter Delegated To">
+                            </div>
+                            <div class="w3-half" style="display: inline-block; text-align: right;">
+                                <input class="w3-button w3-teal" type="button" value="Share User" onclick="ShareUser()">
+                            </div>
+                        </div>
+                        
+                        <label class="w3-label" style="font-size: large;" >Completion Date:</label>
+                        <input class="w3-input" type="date" name="CompletionDate" id ="date" value=""> 
+                        <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
+                    </form>
+
+                <!-- for the share button -->
+                <div id="shareUserModal" class="w3-modal">
+                    <div class="w3-modal-content w3-card-4">
+                        <header class="w3-container w3-teal">
+                            <span class="w3-button w3-display-topright" onclick="closeShareUserModal()">&times;</span>
+                            <h2>Share User</h2>
+                        </header>
+                        <div class="w3-container">
+                            <!-- Content of the modal dialog goes here -->
+                            <p>Enter the user to share with:</p>
+                            <input class="w3-input" type="text" name="sharedUser">
+                            <button class="w3-button w3-teal" onclick="shareWithUser()">Share</button>
+                        </div>
+                    </div>
                 </div>
-            </form>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+
+
+        <!-- Delete Modals -->
+        <div class="w3-container">
+            <div id="delete-form" class="w3-modal">
+                <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
+                    <!-- head -->
+                    <div class="w3-container w3-teal">
+                        <h2>Delete Note?</h2>
+                        <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright"
+                            onclick="document.getElementById('delete-form').style.display='none'">&times;</span>
+                    </div>
+
+                    <form class="w3-container" action="/delete" method="post">
+                        <input type="hidden" name="NoteID" id="noteIdToDelete">
+                        <div class="w3-center">
+                            <button class="w3-btn w3-red w3-margin-top w3-margin-bottom" type="submit">Delete</button>
+                            <button type="button" class="w3-btn w3-teal w3-margin-top w3-margin-bottom"
+                                    onclick="document.getElementById('delete-form').style.display='none'">Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
 <script>
+
   function updateNote(e) {
     var editForm = document.getElementById('edit-form');
     // display update form
     editForm.style.display = 'block';
-    // get Note id to update
+
+    var editForm = document.getElementById('edit-form');
+  // Get Note Title and User Name from the current row
+    var noteTitle = e.parentNode.parentNode.childNodes[1].textContent;
+    var userName = e.parentNode.parentNode.childNodes[0].textContent;
     var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
+
+    // Set the content in the modal
+    document.getElementById('note-title').value = noteTitle;
+    document.getElementById('user-name').value = userName;
     document.getElementById('noteIdToUpdate').value = NoteID;
   }
 
@@ -168,6 +247,21 @@
     var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
     document.getElementById('NoteIdToDelete').value = NoteId;
   }
+
+  function openShareUserModal() {
+        document.getElementById('shareUserModal').style.display = 'block';
+    }
+
+    function closeShareUserModal() {
+        document.getElementById('shareUserModal').style.display = 'none';
+    }
+
+    function shareWithUser() {
+        // Handle sharing 
+        // document.querySelector('[name="sharedUser"]').value
+        // Close the modal after sharing
+        closeShareUserModal();
+    }
 </script>
 </body>
 </html>
