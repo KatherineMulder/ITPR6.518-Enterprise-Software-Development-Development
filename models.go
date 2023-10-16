@@ -73,14 +73,15 @@ func (a *App) importData() error {
 	}
 	log.Printf("Users table created")
 
-	sql = `DROP TABLE IF EXISTS "notes";
+	sql = `CREATE TYPE note_status AS ENUM ('W.I.P','Completed', 'Cancelled','Pending Approval',)
+	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
         noteID INT PRIMARY KEY,
         userID INTEGER NOT NULL,
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
 		completion_date TIMESTAMP,
-		status VARCHAR(50)
+		status note_status
     );`
 	_, err = a.db.Exec(sql)
 	if err != nil {
