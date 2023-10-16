@@ -29,6 +29,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
 		// insert to database
+		//a.db.Exec(`SELECT setval(pg_get_serial_sequence('users', 'userid'), coalesce(max(id),0) + 1, false) FROM t1;`)
 		_, err = a.db.Exec(`INSERT INTO "users"(username, password) VALUES($1, $2)`,
 			username, hashedPassword)
 		checkInternalServerError(err, w)
@@ -38,6 +39,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
+	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {

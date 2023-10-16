@@ -83,7 +83,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	var note Note
 	log.Println(note)
 	for rows.Next() {
-		err = rows.Scan(&note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
+		err = rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
 		log.Println(err)
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)

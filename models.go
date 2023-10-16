@@ -75,7 +75,7 @@ func (a *App) importData() error {
 
 	sql = `DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
-        noteID SERIAL PRIMARY KEY,
+        noteID INT PRIMARY KEY,
         userID INTEGER NOT NULL,
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
@@ -91,7 +91,7 @@ func (a *App) importData() error {
 	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
 	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
-		sharingID SERIAL PRIMARY KEY,
+		sharingID INT PRIMARY KEY,
 		noteID INTEGER,
 		userID INTEGER,
 		setup_date TIMESTAMP,
@@ -105,7 +105,7 @@ func (a *App) importData() error {
 
 	log.Printf("Inserting Data...")
 
-	stmt, err := a.db.Prepare(`INSERT INTO "users" VALUES($1,$2,$3,$4)`)
+	stmt, err := a.db.Prepare(`INSERT INTO "users"(username, password, email) VALUES($1,$2,$3)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,12 +117,11 @@ func (a *App) importData() error {
 
 	var u User
 	for _, data := range data {
-		u.UserID, _ = strconv.Atoi(data[0])
-		u.Username = data[1]
-		u.Password = data[2]
-		u.Email = data[3]
+		u.Username = data[0]
+		u.Password = data[1]
+		u.Email = data[2]
 
-		_, err = stmt.Exec(u.UserID, u.Username, u.Password, u.Email)
+		_, err = stmt.Exec(u.Username, u.Password, u.Email)
 		if err != nil {
 			log.Fatal(err)
 		}
