@@ -51,6 +51,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
+//user Login 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Method %s", r.Method)
