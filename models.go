@@ -73,7 +73,7 @@ func (a *App) importData() error {
 	}
 	log.Printf("Users table created")
 
-	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled','Delegated')
+	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled','Delegated');
 	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
         noteID SERIAL PRIMARY KEY,
@@ -128,7 +128,7 @@ func (a *App) importData() error {
 		}
 	}
 
-	stmt, err = a.db.Prepare(`INSERT INTO "notes" VALUES($1,$2,$3,$4,$5,$6)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, completion_date, status) VALUES($1,$2,$3,$4,$5)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,24 +140,27 @@ func (a *App) importData() error {
 
 	var n Note
 	for _, data := range data {
-		completetime, err := time.Parse("2006-01-02 15:04", data[4])
-		if err != nil {
-			log.Fatal(err)
-		}
-		n.NoteID, _ = strconv.Atoi(data[0])
-		n.UserID, _ = strconv.Atoi(data[1])
-		n.NoteTitle = data[2]
-		n.NoteContent = data[3]
-		n.CompletionDate = completetime
-		n.Status = data[5]
+		completetime := time.Now()
+		if data[4] != "None" {
+			completetime, err = time.Parse("2006-01-02 15:04", data[3])
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		_, err = stmt.Exec(n.NoteID, n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.Status)
+		}
+		n.UserID, _ = strconv.Atoi(data[0])
+		n.NoteTitle = data[1]
+		n.NoteContent = data[2]
+		n.CompletionDate = completetime
+		n.Status = data[4]
+
+		_, err = stmt.Exec(n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.Status)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	stmt, err = a.db.Prepare(`INSERT INTO "sharing" VALUES($1,$2,$3,$4,$5)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "sharing"(noteID, userID, setup_date, status) VALUES($1,$2,$3,$4)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -169,17 +172,16 @@ func (a *App) importData() error {
 
 	var s Sharing
 	for _, data := range data {
-		timestamp, err := time.Parse("2006-01-02 15:04", data[3])
+		timestamp, err := time.Parse("2006-01-02 15:04", data[2])
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.SharingID, _ = strconv.Atoi(data[0])
-		s.UserID, _ = strconv.Atoi(data[1])
-		s.NoteID, _ = strconv.Atoi(data[2])
+		s.UserID, _ = strconv.Atoi(data[0])
+		s.NoteID, _ = strconv.Atoi(data[1])
 		s.Timestamp = timestamp
-		s.status = data[4]
+		s.status = data[3]
 
-		_, err = stmt.Exec(s.SharingID, s.UserID, s.NoteID, s.Timestamp, s.status)
+		_, err = stmt.Exec(s.UserID, s.NoteID, s.Timestamp, s.status)
 		if err != nil {
 			log.Fatal(err)
 		}
