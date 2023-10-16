@@ -34,11 +34,17 @@
                     <a href="#">
                         <i class="icon ion-gear-a w3-xxlarge hoverbtn fa fa-gear" onclick="openSettings()"></i>
                      </a>
+                        <p>User Name: <span id="user-name"></span></p>
                     </div>
-                    <h3 class="w3-right">Notes</h3>
+                    <h1 class="w3-right">NOTES</h1>
                 </div>
                 <div class="w3-half w3-text-right">
                     <div class="w3-right">
+                         <!-- search icon on the right -->
+                     <a href="#">
+                        <input type="text" placeholder="Search.." name="search">
+                        <i class="icon ion-search w3-xxlarge hoverbtn" onclick="openSearch()"></i>
+                    </a>
                         <!--<h3 class="w3-left w3-margin=right">Logged in as {{.Username}}</h3>-->
                     <a href="#" onclick="document.getElementById('create-form').style.display='block'">
                         <i class="icon ion-ios-plus-outline w3-xxlarge hoverbtn"></i>
@@ -46,12 +52,6 @@
                     <a href="/logout">
                         <i class="icon ion-log-out w3-xxlarge hoverbtn"></i>
                     </a>
-                     <!-- search icon on the right -->
-                     <a href="#">
-                        <i class="icon ion-search w3-xxlarge hoverbtn" onclick="openSearch()"></i>
-                    </a>
-
-                     
                 </div>
             </div>
         </div>
@@ -99,16 +99,16 @@
             </div>
 
             <form class="w3-container" action="/create" method="post">
-                <label class="w3-label" style="font-size: large;">Note Title: </label>
+                <label id="noteTitle" class="w3-label" style="font-size: large;">Note Title: </label>
                 <input class="w3-input" type="text" name="NoteTitle" value="">
 
-                <label class="w3-label" style="font-size: large;">Note Content:</label>
+                <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
                 <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
 
-                <label class="w3-label" style="font-size: large;">Created Date:</label> 
+                <label id="createDate"class="w3-label" style="font-size: large;">Created Date:</label> 
                 <input class="w3-input" type="date" name="createDate" id="date"value="">
 
-                <label class="w3-label" style="font-size: large;">Status:</label>
+                <label id="status"class="w3-label" style="font-size: large;">Status:</label>
                 <select class="w3-select" name="status">
                     <option value="none">None</option>
                     <option value="in-progress">In Progress</option>
@@ -152,10 +152,7 @@
                             <!-- Search Bar -->
                     <div class="w3-row">
                         <div class="w3-half">
-                        <input class="w3-input w3-panel w3-border w3-round-xxlarge" type="text" placeholder="Search Note Title">
-                        </div>
-                        <div class="w3-half w3-text-right">
-                        <input class="w3-input w3-panel w3-border w3-round-xxlarge" type="text" placeholder="Search User Name">
+                        <input class="w3-input w3-panel w3-border w3-round-xxlarge" type="text" placeholder="Search Note">
                         </div>
                     </div><br>
 
@@ -239,6 +236,7 @@
     document.getElementById('note-title').value = noteTitle;
     document.getElementById('user-name').value = userName;
     document.getElementById('noteIdToUpdate').value = NoteID;
+    
   }
 
   function deleteNote(e) {
