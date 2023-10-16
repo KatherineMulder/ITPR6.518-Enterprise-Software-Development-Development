@@ -73,10 +73,10 @@ func (a *App) importData() error {
 	}
 	log.Printf("Users table created")
 
-	sql = `CREATE TYPE note_status AS ENUM ('W.I.P','Completed', 'Cancelled','Pending Approval',)
+	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled','Delegated')
 	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
-        noteID INT PRIMARY KEY,
+        noteID SERIAL PRIMARY KEY,
         userID INTEGER NOT NULL,
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
@@ -92,7 +92,7 @@ func (a *App) importData() error {
 	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
 	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
-		sharingID INT PRIMARY KEY,
+		sharingID SERIAL PRIMARY KEY,
 		noteID INTEGER,
 		userID INTEGER,
 		setup_date TIMESTAMP,
