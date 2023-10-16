@@ -74,7 +74,6 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := a.db.Query(SQL)
 	log.Println(rows)
 
-
 	//// Check for internal server errors and handle them by writing an error response.
 	checkInternalServerError(err, w)
 
@@ -85,7 +84,6 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	log.Println(funcMap)
-
 
 	// Initialize the data structure to hold information for the template.
 	data := Data{}
@@ -102,7 +100,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
 		err = rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CompletionDate, &note.Status)
+		checkInternalServerError(err, w)
 		log.Println(err)
+		note.FormattedDate()
 		checkInternalServerError(err, w)
 
 		// Append the scanned note to the data structure.
@@ -111,16 +111,8 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Create a new template, specify the function map, and parse the template file.
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
-	log.Println(t)
-
-	// Check for internal server errors during template parsing.
 	checkInternalServerError(err, w)
-
-	// Execute the template with the data and write the result to the response.
 	err = t.Execute(w, data)
-	log.Println(t)
-
-	// Check for internal server errors during template execution.
 	checkInternalServerError(err, w)
 }
 
@@ -164,10 +156,10 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
-//// The updateHandler handles updating a note. ////
+// // The updateHandler handles updating a note. ////
 func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("update")
-	a.isAuthenticated(w, r) 
+	a.isAuthenticated(w, r)
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
@@ -182,7 +174,7 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	note.Status = r.FormValue("status")
 
-   // Prepare an SQL statement to update the note
+	// Prepare an SQL statement to update the note
 	stmt, err := a.db.Prepare(`UPDATE "notes" SET note_title=$1, note_content=$2, completion_date=$3, status=$4 WHERE noteID=$5`)
 	checkInternalServerError(err, w)
 
@@ -196,9 +188,7 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
-
-
-////  The deleteHandler handles deleting a note. ////
+// //  The deleteHandler handles deleting a note. ////
 func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Delete")
 	a.isAuthenticated(w, r)

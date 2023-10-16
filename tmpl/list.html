@@ -74,7 +74,7 @@
                 <td>{{$note.UserID}}</td>
                 <td>{{$note.NoteTitle}}</td>
                 <td>{{$note.NoteContent}}</td>
-                <td>{{$note.CompletionDate}}</td>
+                <td>{{.FormattedDate}}</td>
                 <td>{{$note.Status}}</td>
                 <td>
                     <button class="w3-btn w3-teal" onclick="updateNote(this);">Modify</button>

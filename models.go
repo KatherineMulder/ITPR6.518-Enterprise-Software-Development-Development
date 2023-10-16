@@ -33,6 +33,9 @@ type Sharing struct {
 	status    string    `json:"status"`
 }
 
+func (n Note) FormattedDate() string {
+	return n.CompletionDate.Format(time.ANSIC)
+}
 
 // Read data from csv file
 func readData(fileName string) ([][]string, error) {
@@ -59,7 +62,7 @@ func readData(fileName string) ([][]string, error) {
 	return records, nil
 }
 
-////////creating tables in a PostgreSQL database and inserting data into them./////// 
+// //////creating tables in a PostgreSQL database and inserting data into them.///////
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
@@ -111,13 +114,11 @@ func (a *App) importData() error {
 	log.Printf("Sharing Table created")
 	log.Printf("Inserting Data...")
 
-
 	// inserting data into the "users" table
 	stmt, err := a.db.Prepare(`INSERT INTO "users"(username, password, email) VALUES($1,$2,$3)`)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 
 	//readData function is used to read the data from the CSV file and store it in a slice of slices of strings.
 	data, err := readData("data/Users.csv")
@@ -133,7 +134,7 @@ func (a *App) importData() error {
 		u.Password = data[1]
 		u.Email = data[2]
 
-	//execute the SQL statement and pass the values from the User struct as arguments.
+		//execute the SQL statement and pass the values from the User struct as arguments.
 		_, err = stmt.Exec(u.Username, u.Password, u.Email)
 		if err != nil {
 			log.Fatal(err)
@@ -155,17 +156,16 @@ func (a *App) importData() error {
 	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {
-		completetime := time.Now() 
-		if data[4] != "None" { 
-			completetime, err = time.Parse("2006-01-02 15:04", data[3]) 
+		var completetime time.Time
+		if data[4] != "None" {
+			completetime, err = time.Parse("15:04 02-01-2006", data[3])
 			if err != nil {
 				log.Fatal(err)
 			}
-
 		}
 		n.UserID, _ = strconv.Atoi(data[0]) //converts the string to an integer
-		n.NoteTitle = data[1] 
-		n.NoteContent = data[2] 
+		n.NoteTitle = data[1]
+		n.NoteContent = data[2]
 		n.CompletionDate = completetime
 		n.Status = data[4]
 
@@ -188,7 +188,7 @@ func (a *App) importData() error {
 	/////insertion into the "sharing" table.///////
 	var s Sharing
 	for _, data := range data {
-		timestamp, err := time.Parse("2006-01-02 15:04", data[2])
+		timestamp, err := time.Parse("15:04 02-01-2006", data[2])
 		if err != nil {
 			log.Fatal(err)
 		}
