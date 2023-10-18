@@ -1,6 +1,6 @@
-User_ID,Note_ID,Timestamp,Status
-3,1,12:00 10-10-2023,Read
-1,2,12:00 10-10-2023,Edit
-2,3,12:00 10-10-2023,Edit
-5,4,12:00 10-10-2023,Read
-4,5,12:00 10-10-2023,Edit
+SharingID,NoteID,UserID,Timestamp,AccessLevel
+1,1,2,2023-10-18 08:30:00,Read
+2,1,3,2023-10-18 09:15:00,Read/Write
+3,2,4,2023-10-18 10:00:00,Read
+4,3,5,2023-10-18 10:45:00,Read/Write
+5,3,2,2023-10-18 11:30:00,Read

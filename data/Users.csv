@@ -1,6 +1,6 @@
-Username,Password,Email
-Fred Jack,password,fred.jack@hotmail.com
-Tom Good,password,tom.good@hotmail.com
-Kate Smith,password,kate.smith@hotmail.com
-John Key,password,john.key@hotmail.com
-Alice Arden,password,alice.arden@hotmail.com
+User_ID,Username,Password,Email
+1,johndoe,johndoe123,johndoe@example.com
+2,alice123,alicepwd456,alice@example.com
+3,bobsmith,bobpass789,bob@example.com
+4,sarahjane,sarahpwd321,sarah@example.com
+5,emilybrown,emilypass555,emily@example.com

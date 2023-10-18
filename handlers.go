@@ -28,10 +28,14 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 // The listHandler handles the listing of notes.
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("list")
-	a.isAuthenticated(w, r) // Check if the user is authenticated
 
+	// Check if the user is authenticated
+	a.isAuthenticated(w, r) 
+
+	//get the current username
 	sess := session.Get(r)
 	log.Println(sess)
+
 	user := "[guest]"
 	log.Println(user)
 
@@ -43,7 +47,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		// Handle incorrect HTTP method
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
+		return
 	}
+
 
 	params := mux.Vars(r)
 	log.Println(params)

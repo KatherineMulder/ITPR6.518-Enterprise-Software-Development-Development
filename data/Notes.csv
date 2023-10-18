@@ -1,6 +1,6 @@
-User_ID,NoteTitle,NoteContent,CompletionDate,Status
+User_ID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
 2,Meeting,The meeting date is 10/10,,None
 3,Eat,Time to Eat,12:00 10-10-2023,Completed
 4,Haircut,Appointment for Haircut,12:00 10-10-2023,Cancelled
-5,Appointment,DR appointment in the afternooon,,None
-6,Recycling,Dont forget to do the recycling this weekend,,None
+5,Appointment,DR appointment in the afternoon,,None
+6,Recycling,Don't forget to do the recycling this weekend,,None

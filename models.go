@@ -6,6 +6,9 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Create Structs for the tables
@@ -14,6 +17,8 @@ type Note struct {
 	UserID         int       `json:"userID"`
 	NoteTitle      string    `json:"noteTitle"`
 	NoteContent    string    `json:"noteContent"`
+	CreationDate   time.Time `json:"creationDate"`
+	DelegatedTo    string  `json:"delegatedTo"`
 	CompletionDate time.Time `json:"completionDate"`
 	Status         string    `json:"status"`
 }
@@ -30,12 +35,15 @@ type Sharing struct {
 	NoteID    int       `json:"noteID"`
 	UserID    int       `json:"userID"`
 	Timestamp time.Time `json:"timestamp"`
-	status    string    `json:"status"`
+	Status string    `json:"accessLevel"` // Read or Read/Write
 }
 
+// FormattedDate formats the date for display on the web page.
 func (n Note) FormattedDate() string {
-	return n.CompletionDate.Format(time.ANSIC)
+    return n.CompletionDate.Format(time.ANSIC)
 }
+
+
 
 // Read data from csv file
 func readData(fileName string) ([][]string, error) {
@@ -62,50 +70,58 @@ func readData(fileName string) ([][]string, error) {
 	return records, nil
 }
 
+
+
 // //////creating tables in a PostgreSQL database and inserting data into them.///////
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
 	sql := `DROP TABLE IF EXISTS "users";
     CREATE TABLE "users" (
-        userID SERIAL PRIMARY KEY, 
-        username VARCHAR(100) NOT NULL,
+        user_id SERIAL PRIMARY KEY, 
+        username VARCHAR(100) NOT NULL UNIQUE,
 		password VARCHAR(100) NOT NULL,
 		email VARCHAR(100)
     );`
+
 	_, err := a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Users table created")
 
+
 	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled','Delegated');
 	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
-        noteID SERIAL PRIMARY KEY,
-        userID INTEGER NOT NULL,
+        note_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(user_id),
 		note_title VARCHAR(50),
 		note_content TEXT NOT NULL,
+		creation_date TIMESTAMP NOT NULL,
+		delegated_to INTEGER REFERENCES users(user_id),
 		completion_date TIMESTAMP,
 		status note_status
     );`
+
+	sql = `CREATE TYPE sharing_status AS ENUM ('Read','Edit');`
 	_, err = a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Notes table created")
 
+
 	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
 	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
-		sharingID SERIAL PRIMARY KEY,
-		noteID INTEGER,
-		userID INTEGER,
+		sharing_id SERIAL PRIMARY KEY,
+		note_id INTEGER,
+		user_id INTEGER,
 		setup_date TIMESTAMP,
 		status sharing_status
 	);`
 
-	//executes a SQL command used to discard the result from the database query, If an error occurs  it will be logged using log.Fatal(err).
 	_, err = a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
@@ -114,7 +130,8 @@ func (a *App) importData() error {
 	log.Printf("Sharing Table created")
 	log.Printf("Inserting Data...")
 
-	// inserting data into the "users" table
+
+	// inserting data into the "users" table//
 	stmt, err := a.db.Prepare(`INSERT INTO "users"(username, password, email) VALUES($1,$2,$3)`)
 	if err != nil {
 		log.Fatal(err)
@@ -126,7 +143,7 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
-	/////hold the data from the CSV file before insertion into the "users" table.///////
+
 	var u User
 	//range over the data slice and assign the values to the User struct.
 	for _, data := range data {
@@ -141,8 +158,10 @@ func (a *App) importData() error {
 		}
 	}
 
+
+
 	//inserting data into the "notes" table
-	stmt, err = a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, completion_date, status) VALUES($1,$2,$3,$4,$5)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "notes"(user_id, note_title, note_content, creation_date, delegated_to, completion_date, status) VALUES($1,$2,$3,$4,$5,$6,$7)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -153,7 +172,6 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
-	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {
 		var completetime time.Time
@@ -163,11 +181,14 @@ func (a *App) importData() error {
 				log.Fatal(err)
 			}
 		}
+
 		n.UserID, _ = strconv.Atoi(data[0]) //converts the string to an integer
 		n.NoteTitle = data[1]
 		n.NoteContent = data[2]
+		//n.CreationDate = Data[3]
+		//n.DelegatedTo = Data[4]  
 		n.CompletionDate = completetime
-		n.Status = data[4]
+		//n.Status = Data[6]
 
 		_, err = stmt.Exec(n.UserID, n.NoteTitle, n.NoteContent, n.CompletionDate, n.Status)
 		if err != nil {
@@ -175,7 +196,11 @@ func (a *App) importData() error {
 		}
 	}
 
-	stmt, err = a.db.Prepare(`INSERT INTO "sharing"(noteID, userID, setup_date, status) VALUES($1,$2,$3,$4)`)
+
+
+	//inserting data into the "sharing" table
+	stmt, err = a.db.Prepare(`INSERT INTO sharing(note_id, user_id, setup_date, status) VALUES($1, $2, $3, $4)`)
+	
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -185,29 +210,29 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
-	/////insertion into the "sharing" table.///////
-	var s Sharing
-	for _, data := range data {
-		timestamp, err := time.Parse("15:04 02-01-2006", data[2])
+	///// Insertion into the "sharing" table. /////
+		var s Sharing
+		for _, data := range data {
+			timestamp, err := time.Parse("15:04 02-01-2006", data[2])
+			if err != nil {
+				log.Fatal(err)
+			}
+			s.UserID, _ = strconv.Atoi(data[0])
+			s.NoteID, _ = strconv.Atoi(data[1])
+			s.Timestamp = timestamp
+			s.Status = data[3] // Corrected to use the 'Status' field, not 'status'.
+
+			_, err = stmt.Exec(s.UserID, s.NoteID, s.Timestamp, s.Status)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		file, err := os.Create("./imported")
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.UserID, _ = strconv.Atoi(data[0])
-		s.NoteID, _ = strconv.Atoi(data[1])
-		s.Timestamp = timestamp
-		s.status = data[3]
+		defer file.Close()
 
-		_, err = stmt.Exec(s.UserID, s.NoteID, s.Timestamp, s.status)
-		if err != nil {
-			log.Fatal(err)
-		}
+		return err
 	}
-
-	file, err := os.Create("./imported")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	return err
-}
