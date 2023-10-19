@@ -15,6 +15,8 @@ import (
 type Data struct {
 	Username string
 	Notes    []Note
+	//Sharing []Note
+	
 }
 
 // The indexHandler handles the root endpoint.

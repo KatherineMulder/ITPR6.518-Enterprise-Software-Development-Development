@@ -1,6 +1,9 @@
-User_ID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
-2,Meeting,The meeting date is 10/10,,None
-3,Eat,Time to Eat,12:00 10-10-2023,Completed
-4,Haircut,Appointment for Haircut,12:00 10-10-2023,Cancelled
-5,Appointment,DR appointment in the afternoon,,None
-6,Recycling,Don't forget to do the recycling this weekend,,None
+UserID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
+1,Shopping List,Buy milk and eggs,,John,,None
+2,Work Tasks,Finish the report,,Emily,,Completed
+3,Personal Project,Write a blog post,,Michael,,Cancelled
+4,Home Chores,Clean the living room,,Susan,,Delegated
+5,Meeting Agenda,Prepare for team meeting,,David,,In Progress
+
+
+

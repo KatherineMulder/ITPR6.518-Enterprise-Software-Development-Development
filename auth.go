@@ -4,15 +4,14 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	//"html/template"
 
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
 )
 
-//// The registerHandler handles user registration.
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
- 	// Serve the registration form if the request method is not POST
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/register.html")
 		return
@@ -22,12 +21,19 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-
+	
 	// Check if the user already exists in the database
 	var user User
 	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password)
+
+
+	// need a check error by using if err ==nill {} and can set cookies 
+	//if user doesnt exist will redirect to registration , we can use cookies to accomplish this also display message
+
+
+	// Check for internal server errors and handle them by writing an error response.
 	switch {
-	// user is available
+	
 	case err == sql.ErrNoRows:
 
 		// User is not found, so we hash the password and insert it into the database
@@ -51,20 +57,26 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
+
+
 //user Login 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Method %s", r.Method)
+
+	//we will need to use template to display the login page
+
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/login.html")
 		return
 	}
-
+	
 	//user info from the submitted form
 	username := r.FormValue("usrname")
 	log.Println(username)
 	password := r.FormValue("psw")
 	log.Println(password)
+
 
 	// query database to get match username
 	var user User
