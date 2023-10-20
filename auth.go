@@ -33,7 +33,6 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check for internal server errors and handle them by writing an error response.
 	switch {
-	
 	case err == sql.ErrNoRows:
 
 		// User is not found, so we hash the password and insert it into the database
@@ -71,6 +70,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+
 	//user info from the submitted form
 	username := r.FormValue("usrname")
 	log.Println(username)
@@ -80,7 +80,8 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// query database to get match username
 	var user User
-	err := a.db.QueryRow(`SELECT userID, username, password FROM "users" WHERE username=$1`, username).Scan(&user.UserID, &user.Username, &user.Password)
+	err := a.db.QueryRow(`SELECT * FROM "users" WHERE username=$1`, username).Scan(&user.UserID, &user.Username, &user.Password, &user.Email)
+
 	checkInternalServerError(err, w)
 
 	//password is encrypted

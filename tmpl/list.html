@@ -29,23 +29,29 @@
         <header class="w3-container w3-center w3-teal">
             <div class="w3-row">
                 <div class="w3-half">
+
+
+                    <!--settings icon 
                     <div class="w3-left">
-                    <!--settings icon -->
                     <a href="#">
                         <i class="icon ion-gear-a w3-xxlarge hoverbtn fa fa-gear" onclick="openSettings()"></i>
-                     </a>
+                     </a>-->
+
                         <p>User Name: <span id="user-name"></span></p>
                     </div>
                     <h1 class="w3-right">TASKS</h1>
                 </div>
+
+                <!-- search icon on the right
                 <div class="w3-half w3-text-right">
                     <div class="w3-right">
-                         <!-- search icon on the right -->
                      <a href="#">
                         <input type="text" placeholder="Search.." name="search">
                         <i class="icon ion-search w3-xxlarge hoverbtn" onclick="openSearch()"></i>
-                    </a>
-                        <!--<h3 class="w3-left w3-margin=right">Logged in as {{.Username}}</h3>-->
+                    </a>-->
+
+                    
+                        <h3 class="w3-left w3-margin=right">Logged in as {{.Username}}</h3>
                     <a href="#" onclick="document.getElementById('create-form').style.display='block'">
                         <i class="icon ion-ios-plus-outline w3-xxlarge hoverbtn"></i>
                     </a>
