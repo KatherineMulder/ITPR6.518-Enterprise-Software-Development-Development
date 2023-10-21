@@ -4,11 +4,25 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	//"html/template" for cookies
-
+	"regexp"
+	"strings"
+	
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/asaskevich/govalidator"
 )
+
+// validStatuses slice
+var validStatuses = []string{"none", "in progress", "completed", "cancelled", "delegated"}
+
+// Patterns
+var Patterns = map[string]string{
+	`[a-zA-Z]+`:                                                  	"sentence with a given prefix and/or suffix",
+	`[0-9]+`:                                                    	"A phone number with a given area code and a consecutive sequence of numbers that are part of that number",
+	`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`:          	"An email address on a domain that is only partially provided",
+	`\\b[A-Z]{3,}\\b`:                                            	"A word in all capitals of three characters or more",
+}
+
 
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -20,6 +34,18 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user information from the form
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+
+	// Validate username and password
+	usernameValid, usernameErrMsg := validatePattern("[a-zA-Z]+", username)
+	passwordValid, passwordErrMsg := validatePattern("[a-zA-Z0-9]+", password)
+
+
+	
+	if !usernameValid || !passwordValid {
+		errorMsg := usernameErrMsg + passwordErrMsg
+		http.Error(w, errorMsg, http.StatusBadRequest)
+		return
+	}
 
 	
 	// Check if the user already exists in the database
