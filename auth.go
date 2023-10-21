@@ -4,23 +4,33 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"regexp"
+	"unicode"
 	"strings"
-	
+
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/asaskevich/govalidator"
 )
 
-// validStatuses slice
-var validStatuses = []string{"none", "in progress", "completed", "cancelled", "delegated"}
+// Validate if the password contains at least one numeric character
+func hasNumeric(password string) bool {
+    for _, char := range password {
+        if unicode.IsDigit(char) {
+            return true
+        }
+    }
+    return false
+}
 
-// Patterns
-var Patterns = map[string]string{
-	`[a-zA-Z]+`:                                                  	"sentence with a given prefix and/or suffix",
-	`[0-9]+`:                                                    	"A phone number with a given area code and a consecutive sequence of numbers that are part of that number",
-	`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`:          	"An email address on a domain that is only partially provided",
-	`\\b[A-Z]{3,}\\b`:                                            	"A word in all capitals of three characters or more",
+// Validate if the password contains at least one special character
+func hasSpecialChar(password string) bool {
+    specialChars := "!@#$%^&*()-_=+[]{}|;:'\",.<>/?\\"
+    for _, char := range password {
+        if strings.ContainsRune(specialChars, char) {
+            return true
+        }
+    }
+    return false
 }
 
 
@@ -36,17 +46,16 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	// Validate username and password
-	usernameValid, usernameErrMsg := validatePattern("[a-zA-Z]+", username)
-	passwordValid, passwordErrMsg := validatePattern("[a-zA-Z0-9]+", password)
+	passwordValid := govalidator.HasUpperCase(password) &&
+    govalidator.HasLowerCase(password) &&
+    hasNumeric(password) &&
+    hasSpecialChar(password)
 
-
-	
-	if !usernameValid || !passwordValid {
-		errorMsg := usernameErrMsg + passwordErrMsg
+	if !passwordValid {
+		errorMsg := "Password criteria not met."
 		http.Error(w, errorMsg, http.StatusBadRequest)
 		return
 	}
-
 	
 	// Check if the user already exists in the database
 	var user User
@@ -57,7 +66,10 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		checkInternalServerError(err, w)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 
 		// insert to database
 		_, err = a.db.Exec(`INSERT INTO "users"(username, password) VALUES($1, $2)`,

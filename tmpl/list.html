@@ -98,9 +98,9 @@
                 <td>{{$note.UserID}}</td>
                 <td>{{$note.NoteTitle}}</td>
                 <td>{{$note.NoteContent}}</td>
-                <td>{{$note.CreationDate}}</td>
+                <td>{{$note.CreationDate.Format "October 02, 2023 03:04 PM"}}</td>
                 <td>{{$note.delegatedTo}}</td>
-                <td>{{$note.CompletionDate}}</td>
+                <td>{{$note.CompletionDate.Format "October 02, 2023 03:04 PM"}}</td>
                 <td>{{$note.Status}}</td>
 
                 <td>
@@ -127,34 +127,35 @@
             </div>
 
             <form class="w3-container" action="/create" method="post">
-                <label id="noteTitle" class="w3-label" style="font-size: large;">Note Title: </label>
+                <label class="w3-label" style="font-size: large;">Note Title: </label>
                 <input class="w3-input" type="text" name="NoteTitle" value="">
 
-                <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
-                <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
+                <label class="w3-label" style="font-size: large;">Note Content:</label>
+                <textarea class="w3-input custom-textarea" rows="8" cols="50" name="NoteContent" value=""></textarea>
 
-                <label id="createDate"class="w3-label" style="font-size: large;">Created Date:</label> 
-                <input class="w3-input" type="date" name="createDate" id="date"value="">
+                <label class="w3-label" style="font-size: large;">Created Date:</label>
+                <input class="w3-input" type="date" name="CreationDate" id="date" value="">
 
-                <label id="status"class="w3-label" style="font-size: large;">Status:</label>
-                <select class="w3-select" name="status">
-                    <option value="none">None</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="delegated">Delegated</option>
-                  </select>
+                <label class="w3-label" style="font-size: large;">Status:</label>
+                <select class="w3-select" name="Status">
+                    <option value="None">None</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Delegated">Delegated</option>
+                </select>
 
-                <label class="w3-label" style="font-size: large;" >Completion Date:</label>
-                <input class="w3-input" type="date" name="CompletionDate" id ="date" value="">
+                <label class="w3-label" style="font-size: large;">Completion Date:</label>
+                <input class="w3-input" type="date" name="CompletionDate" id="date" value="">
 
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
 
-                <label class="w3-label" style="font-size: large;">Delegated to:</label> 
+                <label class="w3-label" style="font-size: large;">Delegated to:</label>
             </form>
         </div>
     </div>
 </div>
+
 
 
 <!-- Edit Modals -->

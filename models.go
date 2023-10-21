@@ -42,6 +42,8 @@ func (n Note) FormattedDate() string {
 	return n.CompletionDate.Format(time.ANSIC)
 }
 
+
+
 // Read data from csv file
 func readData(fileName string) ([][]string, error) {
 	f, err := os.Open(fileName)

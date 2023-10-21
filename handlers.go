@@ -18,11 +18,12 @@ type Data struct {
 	//Sharing []Note
 }
 
+
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("index")
 	
 	a.isAuthenticated(w, r)
-	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
+	http.Redirect(w, r, "templ/list.html", http.StatusMovedPermanently)
 }
 
 /*the list handler process: 
@@ -60,21 +61,17 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-	// determine the sorting index
+	// ======= get all notes from the "notes" table ========== //
+	// Determine the sorting index
 	params := mux.Vars(r)
-	log.Println(params)
 	sortcol, err := strconv.Atoi(params["srt"])
-	log.Println(sortcol)
-
 	_, ok := params["srt"]
 	if ok && err != nil {
-		http.Redirect(w, r, "/list", http.StatusFound)
+		http.Redirect(w, r, "tmpl/list.html", http.StatusFound)
+        return 
 	}
 
 	SQL := ""
-	log.Println(SQL)
-
 	switch sortcol {
 	case 1:
 		SQL = `SELECT * FROM "notes" ORDER by note_title`
@@ -88,55 +85,41 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		SQL = `SELECT * FROM "notes" ORDER by noteID`
 	}
 
-	log.Println(SQL)
-
-	rows, err := a.db.Query(SQL)
-	log.Println(rows)
-
-	checkInternalServerError(err, w)
+	// Execute the SQL query to retrieve notes
+    rows, err := a.db.Query(SQL)
+    checkInternalServerError(err, w)
 
 	// Define a function map for use in the template.
-	var funcMap = template.FuncMap{
-		"addOne": func(n int) int {
-			return n + 1
-		},
-	}
+	 var funcMap = template.FuncMap{
+        "addOne": func(n int) int {
+            return n + 1
+        },
+    }
 
-	log.Println(funcMap)
-
-	
+	// Create a Data structure to pass to the template
 	data := Data{}
-	log.Println(data)
-
 	data.Username = user
-	log.Println(data)
-
-	
-	var note Note
-	log.Println(note)
 
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
+		var note Note
 		err := rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.DelegatedTo, &note.CompletionDate, &note.Status)
 		checkInternalServerError(err, w)
-		log.Println(err)
-
 		note.FormattedDate()
 		checkInternalServerError(err, w)
-
-		// Append the scanned note to the data structure.
 		data.Notes = append(data.Notes, note)
-		log.Println(data)
 	}
-	
+
+	// Load the template and execute it with the data
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
 	checkInternalServerError(err, w)
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
 }
 
+	//get all users
+	//get all shared notes with privileges 
 
-// The createHandler handles creating a new note.
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create")
 	a.isAuthenticated(w, r)
