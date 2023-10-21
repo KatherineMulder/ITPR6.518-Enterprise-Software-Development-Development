@@ -33,11 +33,12 @@ type App struct {
 	Router   *mux.Router
 	db       *sql.DB
 	bindport string
+	//username string
 }
 
-// Initialize initializes the application.
 func (a *App) Initialize() {
-	a.bindport = "8080"
+
+	a.bindport = "8080" 
 
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
@@ -65,6 +66,7 @@ func (a *App) Initialize() {
 		log.Fatal(err)
 	}
 
+	// test connection
 	err = a.db.Ping()
 	if err != nil {
 		log.Fatal("Connection to DB failed: ", err)
@@ -72,23 +74,26 @@ func (a *App) Initialize() {
 
 	log.Println("Connection to DB successful")
 
+
 	_, err = os.Stat("./imported")
 	if os.IsNotExist(err) {
 		log.Println("Importing data")
 		a.importData()
 	}
 
+	//set some defaults for the authentication to also support HTTP and HTTPS
 	a.setupAuth()
 
 	a.Router = mux.NewRouter()
 	a.initalizeRoutes()
+
 }
 
 // initalizeRoutes initializes the application routes.
 func (a *App) initalizeRoutes() {
 	staticFileDirectory := http.Dir("./statics/")
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
-	
+
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")

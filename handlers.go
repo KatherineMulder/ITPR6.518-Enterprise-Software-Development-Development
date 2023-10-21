@@ -20,9 +20,22 @@ type Data struct {
 
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("index")
+	
 	a.isAuthenticated(w, r)
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
+
+/*the list handler process: 
+1.Authentication Check
+2.Session Handling
+3.HTTP Method Check
+4.Data Retrieval
+5.Shared Users for Each Note
+6.Data Preparation
+7.Template Rendering
+8.HTTP response.
+*/
+
 
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	
@@ -74,6 +87,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		SQL = `SELECT * FROM "notes" ORDER by noteID`
 	}
+
 	log.Println(SQL)
 
 	rows, err := a.db.Query(SQL)
@@ -120,6 +134,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
 }
+
 
 // The createHandler handles creating a new note.
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
