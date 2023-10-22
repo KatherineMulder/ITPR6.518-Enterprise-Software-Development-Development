@@ -37,7 +37,7 @@ func hasSpecialChar(password string) bool {
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "tmpl/register.html")
+		http.ServeFile(w, r, "/register")
 		return
 	}
 
@@ -74,7 +74,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "loi: "+err.Error(), http.StatusBadRequest)
 		return
 	default:
-		http.Redirect(w, r, "tmpl/login.html", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }
 
@@ -93,7 +93,7 @@ func CheckPasswordWithHash(password, hash string) bool {
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Method %s", r.Method)
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "tmpl/login.html")
+		http.ServeFile(w, r, "/login")
 		return
 	}
 
@@ -119,7 +119,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		http.Redirect(w, r, "tmpl/login.html", http.StatusSeeOther)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
@@ -151,7 +151,7 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	}
  	// Redirect to the login page if the user is not authenticated
 	if !authenticated {
-		http.Redirect(w, r, "tmpl/login.html", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}
 }
 
@@ -164,7 +164,7 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	s = nil
 
 	// Redirect to the login page after logout
-	http.Redirect(w, r, "tmpl/login.html", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
 // authentication handlers using the sessions
