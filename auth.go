@@ -97,34 +97,42 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//user info from the submitted form
-	username := r.FormValue("username")
-	log.Println(username)
+	// grab user info from the submitted form
+	username := r.FormValue("usrname")
 	password := r.FormValue("psw")
-	log.Println(password)
 
 	// query database to get match username
 	var user User
-	err = a.db.QueryRow("SELECT username, password FROM users WHERE username=$1", username).Scan( &user.UserID, &user.Username, &user.Password)
+	err := a.db.QueryRow("SELECT userid, username, password FROM users WHERE username=$1",
+		username).Scan(&user.UserID, &user.Username, &user.Password)
 	checkInternalServerError(err, w)
+
+	// validate password
+	/*
+		//simple unencrypted method
+		if user.Password != password {
+			http.Redirect(w, r, "/login", 301)
+			return
+		}
+	*/
 
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		http.Redirect(w, r, "tmpl/login.html", http.StatusSeeOther)
 		return
 	}
 
-
- 	// Successful login. New session with initial constant and variable attributes
+	// Successful login. New session with initial constant and variable attributes
 	sess := session.NewSessionOptions(&session.SessOptions{
 		CAttrs: map[string]interface{}{"username": user.Username, "userid": user.UserID},
 		Attrs:  map[string]interface{}{"count": 1},
 	})
 	session.Add(sess, w)
 
-	http.Redirect(w, r, "tmpl/list.html", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/list", http.StatusSeeOther)
 }
+
 
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
