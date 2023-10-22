@@ -14,7 +14,6 @@ type User struct {
 	UserID   int    `json:"userID"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email    string `json:"email"`
 }
 
 type Note struct {
@@ -41,8 +40,6 @@ type Sharing struct {
 func (n Note) FormattedDate() string {
 	return n.CompletionDate.Format(time.ANSIC)
 }
-
-
 
 // Read data from csv file
 func readData(fileName string) ([][]string, error) {
@@ -74,12 +71,13 @@ func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
 	sql := `DROP TABLE IF EXISTS "users";
-    CREATE TABLE "users" (
-        userID SERIAL PRIMARY KEY, 
-        username VARCHAR(100) NOT NULL,
-		password VARCHAR(100) NOT NULL,
-		email VARCHAR(100)
-    );`
+	CREATE TABLE "users" (
+		userID SERIAL PRIMARY KEY, 
+		username VARCHAR(100) NOT NULL,
+		password VARCHAR(100) NOT NULL
+	);
+	CREATE UNIQUE INDEX users_by_id ON "users" (userID);`
+
 	_, err := a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
@@ -117,12 +115,11 @@ func (a *App) importData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	log.Printf("Sharing Table created")
 
 
 	// inserting data into the "users" table
-	stmt, err := a.db.Prepare(`INSERT INTO "users"(username, password, email) VALUES($1,$2,$3)`)
+	stmt, err := a.db.Prepare("INSERT INTO users VALUES($1,$2,$3)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,12 +137,11 @@ func (a *App) importData() error {
 	var u User
 	//range over the data slice and assign the values to the User struct.
 	for _, data := range data {
-		u.Username = data[0]
-		u.Password = data[1]
-		u.Email = data[2]
+		u.UserID, _ = strconv.Atoi(data[0])
+		u.Username = data[1]
+		u.Password = data[2]
+		_, err := stmt.Exec(u.UserID, u.Username, u.Password)
 
-		//execute the SQL statement and pass the values from the User struct as arguments.
-		_, err = stmt.Exec(u.Username, u.Password, u.Email)
 		if err != nil {
 			log.Fatal(err)
 		}

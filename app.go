@@ -108,7 +108,6 @@ func (a *App) initalizeRoutes() {
 
 
 	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
-
 	log.Println("Routes established")
 }
 

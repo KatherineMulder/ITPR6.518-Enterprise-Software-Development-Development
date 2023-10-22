@@ -1,4 +1,4 @@
-UserID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
+noteID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
 1,Shopping List,Buy milk and eggs,,John,,None
 2,Work Tasks,Finish the report,,Emily,,Completed
 3,Personal Project,Write a blog post,,Michael,,Cancelled
