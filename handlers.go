@@ -212,10 +212,3 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
-
-func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("index")
-
-	a.isAuthenticated(w, r)
-	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
-}
