@@ -102,6 +102,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
 	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
 	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/getdelegations", a.getdelegationsHandler).Methods("GET")
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 

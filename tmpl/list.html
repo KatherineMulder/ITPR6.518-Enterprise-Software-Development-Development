@@ -73,7 +73,6 @@
             <tr>
                 <td>{{$note.UserID}}</td>
                 <td>{{$note.NoteTitle}}</td>
-                <td>{{$note.NoteContent}}</td>
                 <td>{{$note.CreationDate.Format "October 02, 2023"}}</td>
                 <td>{{$note.DelegatedTo}}</td>
                 <td>{{$note.CompletionDate.Format "October 02, 2023"}}</td>
@@ -109,24 +108,21 @@
                 <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
                 <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
 
-                <label id="createDate"class="w3-label" style="font-size: large;">Created Date:</label> 
-                <input class="w3-input" type="date" name="createDate" id="date"value="">
-
                 <label id="status"class="w3-label" style="font-size: large;">Status:</label>
                 <select class="w3-select" name="status">
                     <option value="none">None</option>
                     <option value="in-progress">In Progress</option>
                     <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
-                    <option value="delegated">Delegated</option>
-                  </select>
+                </select>
 
                 <label class="w3-label" style="font-size: large;" >Completion Date:</label>
                 <input class="w3-input" type="date" name="CompletionDate" id ="date" value="">
 
-                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
+                <label id="delegated" class="w3-label" style="font-size: large;">Delegated to:</label>
+                <select class="w3-select" name="delegated" id="delegatedlist"><option value="">Please select</option></select>
 
-                <label class="w3-label" style="font-size: large;">Delegated to:</label> 
+                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
             </form>
         </div>
     </div>
@@ -244,6 +240,24 @@
         // Close the modal after sharing
         closeShareUserModal();
     }
+
+    function populateDelegatedDropdown() {
+        const delegatedDropdown = document.getElementById('delegatedlist');
+        fetch('/getdelegations') // Use the correct URL to fetch the names from the Go server
+            .then(response => response.json())
+            .then(names => {
+                names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    delegatedDropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error(error));
+    }
+
+    // Call the function to populate the "Delegated to" dropdown when the page loads
+    window.addEventListener('load', populateDelegatedDropdown); 
 </script>
 </body>
 </html>

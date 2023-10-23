@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -212,4 +213,22 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *App) getdelegationsHandler(w http.ResponseWriter, r *http.Request) {
+	names := []string{}
+	SQL := `SELECT username from "users"`
+	rows, err := a.db.Query(SQL)
+	log.Println(rows)
+	checkInternalServerError(err, w)
+	var name string
+	for rows.Next() {
+		err := rows.Scan(&name)
+		log.Println(name)
+		checkInternalServerError(err, w)
+		names = append(names, name)
+		log.Println(names)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(names)
 }
