@@ -24,7 +24,8 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
 
-/*the list handler process:
+/*
+the list handler process:
 1.Authentication Check
 2.Session Handling
 3.HTTP Method Check
@@ -34,7 +35,6 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 7.Template Rendering
 8.HTTP response.
 */
-
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("list")
@@ -55,13 +55,13 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		// Handle incorrect HTTP method
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
-		return
 	}
 
 	// ======= get all notes from the "notes" table ========== //
 	// Determine the sorting index
 	params := mux.Vars(r)
 	sortcol, err := strconv.Atoi(params["srt"])
+
 	_, ok := params["srt"]
 	if ok && err != nil {
 		http.Redirect(w, r, "/list", http.StatusFound)
@@ -96,17 +96,15 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a Data structure to pass to the template
 	data := Data{}
 	data.Username = user
-
+	var note Note
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
-		var note Note
 		err := rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.DelegatedTo, &note.CompletionDate, &note.Status)
 		checkInternalServerError(err, w)
 		note.FormattedDate()
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
 	}
-
 	// Load the template and execute it with the data
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
 	checkInternalServerError(err, w)
@@ -147,8 +145,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creation_date, delegated_to, completetion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
 
 	if err != nil {
-		// Log and handle any errors related to SQL statement preparation
-		log.Printf("Error with Query Prepare")
+		log.Printf("Prepare query error")
 		checkInternalServerError(err, w)
 	}
 
@@ -214,4 +211,11 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("index")
+
+	a.isAuthenticated(w, r)
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
