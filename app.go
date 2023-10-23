@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
+
 // Constants for database connection
 const (
 	host     = "localhost"
@@ -38,7 +39,7 @@ type App struct {
 
 func (a *App) Initialize() {
 
-	a.bindport = "8080" 
+	a.bindport = "8080"
 
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
@@ -74,7 +75,6 @@ func (a *App) Initialize() {
 
 	log.Println("Connection to DB successful")
 
-
 	_, err = os.Stat("./imported")
 	if os.IsNotExist(err) {
 		log.Println("Importing data")
@@ -93,8 +93,8 @@ func (a *App) Initialize() {
 func (a *App) initalizeRoutes() {
 	staticFileDirectory := http.Dir("./statics/")
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
-
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
+
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
@@ -104,8 +104,6 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
-
-
 
 	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
 	log.Println("Routes established")

@@ -26,7 +26,7 @@ type Note struct {
 	CompletionDate time.Time `json:"completionDate"`
 	Status         string    `json:"status"`
 	Privileges     string
-	SharedUsers   []Sharing 
+	SharedUsers    []Sharing
 }
 
 type Sharing struct {
@@ -84,7 +84,7 @@ func (a *App) importData() error {
 	}
 	log.Printf("Users table created")
 
-	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled','Delegated');
+	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled');
 	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
         noteID SERIAL PRIMARY KEY,
@@ -117,7 +117,6 @@ func (a *App) importData() error {
 	}
 	log.Printf("Sharing Table created")
 
-
 	// inserting data into the "users" table
 	stmt, err := a.db.Prepare("INSERT INTO users VALUES($1,$2,$3)")
 	if err != nil {
@@ -148,10 +147,9 @@ func (a *App) importData() error {
 	}
 
 	log.Printf("Inserted Data to usersTable")
-	
 
 	//inserting data into the "notes" table
-	stmt, err = a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creationDate, delegatedTo,completion_date, status) VALUES($1,$2,$3,$4,$5,$6,$7)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creationDate, delegatedTo, completion_date, status) VALUES($1,$2,$3,$4,$5,$6,$7)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -169,12 +167,12 @@ func (a *App) importData() error {
 		creationDate := time.Now()
 
 		if data[3] != "None" {
-			parsedTime, err := time.Parse("02/01", data[3]) 
+			parsedTime, err := time.Parse("02/01", data[3])
 			if err != nil {
-				parsedTime, err = time.Parse("2006-02-02", data[3]) 
+				parsedTime, err = time.Parse("2006-02-02", data[3])
 				if err != nil {
 					log.Printf("Error parsing date for row: %v, error: %v", data, err)
-					continue 
+					continue
 				}
 			}
 			creationDate = parsedTime
@@ -187,15 +185,14 @@ func (a *App) importData() error {
 		n.DelegatedTo = data[4]
 		n.CompletionDate = time.Now()
 		n.Status = data[6]
-	
+
 		_, err = stmt.Exec(n.UserID, n.NoteTitle, n.NoteContent, n.CreationDate, n.DelegatedTo, n.CompletionDate, n.Status)
 		if err != nil {
 			log.Fatal(err)
-		}	
-		
+		}
+
 	}
 	log.Printf("Inserted Data to notesTable")
-
 
 	//inserting data into the "sharing" table
 	stmt, err = a.db.Prepare(`INSERT INTO "sharing"(noteID, userID, setup_date, status) VALUES($1,$2,$3,$4)`)
@@ -207,7 +204,6 @@ func (a *App) importData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 
 	var s Sharing
 	for _, data := range data {

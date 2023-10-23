@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+
 	//"unicode"
 	//"strings"
 
@@ -33,11 +34,10 @@ func hasSpecialChar(password string) bool {
     return false
 }*/
 
-
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "/register")
+		http.ServeFile(w, r, "tmpl/register.html")
 		return
 	}
 
@@ -46,23 +46,22 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	/*// Validate username and password
-	passwordValid := govalidator.HasUpperCase(password) &&
-    govalidator.HasLowerCase(password) &&
-    hasNumeric(password) &&
-    hasSpecialChar(password)
+		passwordValid := govalidator.HasUpperCase(password) &&
+	    govalidator.HasLowerCase(password) &&
+	    hasNumeric(password) &&
+	    hasSpecialChar(password)
 
-	if !passwordValid {
-		errorMsg := "Password criteria not met."
-		http.Error(w, errorMsg, http.StatusBadRequest)
-		return
-	}*/
-	
+		if !passwordValid {
+			errorMsg := "Password criteria not met."
+			http.Error(w, errorMsg, http.StatusBadRequest)
+			return
+		}*/
+
 	// Check if the user already exists in the database
 	var user User
-	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password)  //Scan(&user.Username, &user.Password)
+	err := a.db.QueryRow(`SELECT username, password FROM "users" WHERE username=$1`, username).Scan(&user.Username, &user.Password) //Scan(&user.Username, &user.Password)
 
-
-	// ***to do ***      needs mor error checking ] here could using if err or switch case here  
+	// ***to do ***      needs mor error checking ] here could using if err or switch case here
 	switch {
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -93,7 +92,7 @@ func CheckPasswordWithHash(password, hash string) bool {
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Method %s", r.Method)
 	if r.Method != "POST" {
-		http.ServeFile(w, r, "/login")
+		http.ServeFile(w, r, "tmpl/login.html")
 		return
 	}
 
@@ -118,9 +117,18 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	log.Println(err)
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
+		if user.Password == password {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+			checkInternalServerError(err, w)
+			_, err = a.db.Exec(`UPDATE users SET password=$1 WHERE username=$2`,
+				hashedPassword, username)
+			checkInternalServerError(err, w)
+		} else {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 	}
 
 	// Successful login. New session with initial constant and variable attributes
@@ -132,8 +140,6 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "/list", http.StatusSeeOther)
 }
-
-
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	authenticated := false
@@ -149,7 +155,7 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 			authenticated = true
 		}
 	}
- 	// Redirect to the login page if the user is not authenticated
+	// Redirect to the login page if the user is not authenticated
 	if !authenticated {
 		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 	}

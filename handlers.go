@@ -18,15 +18,13 @@ type Data struct {
 	//Sharing []Note
 }
 
-
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("index")
-	
 	a.isAuthenticated(w, r)
-	http.Redirect(w, r, "templ/list.html", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
 
-/*the list handler process: 
+/*the list handler process:
 1.Authentication Check
 2.Session Handling
 3.HTTP Method Check
@@ -37,11 +35,10 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 8.HTTP response.
 */
 
-
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	log.Printf("list")
-	a.isAuthenticated(w, r) 
+	a.isAuthenticated(w, r)
 
 	//get the current username
 	sess := session.Get(r)
@@ -67,8 +64,8 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	sortcol, err := strconv.Atoi(params["srt"])
 	_, ok := params["srt"]
 	if ok && err != nil {
-		http.Redirect(w, r, "tmpl/list.html", http.StatusFound)
-        return 
+		http.Redirect(w, r, "/list", http.StatusFound)
+		return
 	}
 
 	SQL := ""
@@ -86,15 +83,15 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Execute the SQL query to retrieve notes
-    rows, err := a.db.Query(SQL)
-    checkInternalServerError(err, w)
+	rows, err := a.db.Query(SQL)
+	checkInternalServerError(err, w)
 
 	// Define a function map for use in the template.
-	 var funcMap = template.FuncMap{
-        "addOne": func(n int) int {
-            return n + 1
-        },
-    }
+	var funcMap = template.FuncMap{
+		"addOne": func(n int) int {
+			return n + 1
+		},
+	}
 
 	// Create a Data structure to pass to the template
 	data := Data{}
@@ -117,8 +114,8 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 }
 
-	//get all users
-	//get all shared notes with privileges 
+//get all users
+//get all shared notes with privileges
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create")
@@ -127,22 +124,20 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 
-
 	var note Note
 	sess := session.Get(r)
 	note.UserID = sess.CAttr("userID").(int)
 	note.NoteTitle = r.FormValue("NoteTitle")
 	note.NoteContent = r.FormValue("NoteContent")
-	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04")) 
+	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
 	note.DelegatedTo = r.FormValue("DelegatedTo")
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate")) 
+	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
 	note.Status = r.FormValue("status")
-
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate")) 
+	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -151,13 +146,11 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare an SQL statement to insert the new note
 	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creation_date, delegated_to, completetion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
 
-
 	if err != nil {
 		// Log and handle any errors related to SQL statement preparation
 		log.Printf("Error with Query Prepare")
 		checkInternalServerError(err, w)
 	}
-
 
 	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CreationDate, note.DelegatedTo, note.CompletionDate, note.Status)
 	if err != nil {
@@ -182,33 +175,26 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	note.UserID = sess.CAttr("userID").(int)
 	note.NoteTitle = r.FormValue("NoteTitle")
 	note.NoteContent = r.FormValue("NoteContent")
-	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04")) 
+	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
 	note.DelegatedTo = r.FormValue("DelegatedTo")
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate")) 
+	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
 	note.Status = r.FormValue("status")
-	
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	note.Status = r.FormValue("status")
 
-
 	stmt, err := a.db.Prepare(`UPDATE "notes" SET note_title=$1, note_content=$2, completion_date=$3, status=$4 WHERE noteID=$5`)
 	checkInternalServerError(err, w)
 
-	
 	res, err := stmt.Exec(note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status, note.NoteID)
 	checkInternalServerError(err, w)
 
-	
 	_, err = res.RowsAffected()
 	checkInternalServerError(err, w)
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
-
-
-
 
 func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Delete")
@@ -217,15 +203,13 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 
-	var noteID, _ = strconv.ParseInt(r.FormValue("NoteID"), 10, 64) 
+	var noteID, _ = strconv.ParseInt(r.FormValue("NoteID"), 10, 64)
 	stmt, err := a.db.Prepare(`DELETE FROM "notes" WHERE noteID=$1`)
 	checkInternalServerError(err, w)
 
-	
 	res, err := stmt.Exec(noteID)
 	checkInternalServerError(err, w)
 
-	
 	_, err = res.RowsAffected()
 	checkInternalServerError(err, w)
 
