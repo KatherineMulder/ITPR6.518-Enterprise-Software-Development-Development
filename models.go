@@ -162,6 +162,7 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
+	
 	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {

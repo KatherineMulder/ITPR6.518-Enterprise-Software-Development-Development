@@ -39,7 +39,6 @@ type App struct {
 func (a *App) Initialize() {
 
 	a.bindport = "8080" 
-
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
 		a.bindport = tempport
@@ -93,7 +92,6 @@ func (a *App) Initialize() {
 func (a *App) initalizeRoutes() {
 	staticFileDirectory := http.Dir("./statics/")
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
-
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
@@ -105,8 +103,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
-
-
+	log.Println("Routes established")
 	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
 	log.Println("Routes established")
 }

@@ -18,14 +18,6 @@ type Data struct {
 	//Sharing []Note
 }
 
-
-func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("index")
-	
-	a.isAuthenticated(w, r)
-	http.Redirect(w, r, "templ/list.html", http.StatusMovedPermanently)
-}
-
 /*the list handler process: 
 1.Authentication Check
 2.Session Handling
@@ -36,8 +28,6 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 7.Template Rendering
 8.HTTP response.
 */
-
-
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	
 	log.Printf("list")
@@ -58,17 +48,16 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		// Handle incorrect HTTP method
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
-		return
 	}
 
 	// ======= get all notes from the "notes" table ========== //
 	// Determine the sorting index
 	params := mux.Vars(r)
 	sortcol, err := strconv.Atoi(params["srt"])
+	
 	_, ok := params["srt"]
 	if ok && err != nil {
-		http.Redirect(w, r, "tmpl/list.html", http.StatusFound)
-        return 
+		http.Redirect(w, r, "/list", http.StatusFound)
 	}
 
 	SQL := ""
@@ -88,28 +77,28 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	// Execute the SQL query to retrieve notes
     rows, err := a.db.Query(SQL)
     checkInternalServerError(err, w)
+	var funcMap = template.FuncMap{
+		"multiplication": func(n int, f int) int {
+			return n * f
+		},
+		"addOne": func(n int) int {
+			return n + 1
+		},
+	}
 
-	// Define a function map for use in the template.
-	 var funcMap = template.FuncMap{
-        "addOne": func(n int) int {
-            return n + 1
-        },
-    }
 
 	// Create a Data structure to pass to the template
 	data := Data{}
 	data.Username = user
-
+	var note Note
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
-		var note Note
 		err := rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.DelegatedTo, &note.CompletionDate, &note.Status)
 		checkInternalServerError(err, w)
 		note.FormattedDate()
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
 	}
-
 	// Load the template and execute it with the data
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
 	checkInternalServerError(err, w)
@@ -117,8 +106,10 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 }
 
-	//get all users
-	//get all shared notes with privileges 
+
+
+//get all users
+//get all shared notes with privileges 
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create")
@@ -138,26 +129,14 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate")) 
 	note.Status = r.FormValue("status")
 
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate")) 
-	if err != nil {
-		log.Fatal(err)
-	}
-	note.Status = r.FormValue("status")
-
-	// Prepare an SQL statement to insert the new note
+	// Save to database
 	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creation_date, delegated_to, completetion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
-
+	
 
 	if err != nil {
-		// Log and handle any errors related to SQL statement preparation
-		log.Printf("Error with Query Prepare")
+		log.Printf("Prepare query error")
 		checkInternalServerError(err, w)
 	}
-
 
 	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CreationDate, note.DelegatedTo, note.CompletionDate, note.Status)
 	if err != nil {
@@ -230,4 +209,11 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("index")
+	
+	a.isAuthenticated(w, r)
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
