@@ -38,7 +38,8 @@ type Sharing struct {
 }
 
 func (n Note) FormattedDate() string {
-	return n.CompletionDate.Format(time.ANSIC)
+	log.Println(n.CompletionDate.Format("2002-01-02"))
+	return n.CompletionDate.Format("2002-01-02")
 }
 
 // Read data from csv file
@@ -160,7 +161,6 @@ func (a *App) importData() error {
 		log.Fatal(err)
 	}
 
-	
 	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {

@@ -101,6 +101,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.DelegatedTo, &note.CompletionDate, &note.Status)
 		checkInternalServerError(err, w)
+		log.Println(note.CompletionDate)
 		note.FormattedDate()
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
