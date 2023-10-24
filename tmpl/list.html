@@ -61,7 +61,6 @@
             <tr>
                 <th>UserID</th>  <!--maybe change userID to display user name-->
                 <th>Note Title:</th>
-                <th>Task:</th>
                 <th>Date Created:</th>
                 <th>Delegated to:</th>
                 <th>Date Completed:</th>
@@ -71,11 +70,11 @@
             <tbody> 
             {{range $note := .Notes}}
             <tr>
-                <td>{{$note.UserID}}</td>
+                <td>{{$note.Username}}</td>
                 <td>{{$note.NoteTitle}}</td>
-                <td>{{$note.CreationDate.Format "October 02, 2023"}}</td>
-                <td>{{$note.DelegatedTo}}</td>
-                <td>{{$note.CompletionDate.Format "October 02, 2023"}}</td>
+                <td>{{$note.CreationDate}}</td>
+                <td>{{$note.Delegation}}</td>
+                <td>{{$note.CompletionDate}}</td>
                 <td>{{$note.Status}}</td>
                 <td>
                     <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);"> Modify</button>

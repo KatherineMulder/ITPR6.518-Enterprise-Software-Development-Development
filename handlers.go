@@ -15,8 +15,16 @@ import (
 // hold user data and notes for rendering templates.
 type Data struct {
 	Username string
-	Notes    []Note
-	//Sharing []Note
+	Notes    []DisplayNote
+}
+
+type DisplayNote struct {
+	NoteTitle      string
+	CreationDate   time.Time
+	Delegation     string
+	CompletionDate time.Time
+	Status         string
+	Username       string
 }
 
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,11 +88,15 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	case 4:
 		SQL = `SELECT * FROM "notes" ORDER by status`
 	default:
-		SQL = `SELECT * FROM "notes" ORDER by noteID`
+		SQL = `SELECT notes.note_title, notes.creationdate, notes.delegatedto, notes.completion_date, notes.status, users.username
+		FROM "notes"
+		JOIN users ON notes.userid = users.userid
+		ORDER by notes.noteID;`
 	}
 
 	// Execute the SQL query to retrieve notes
 	rows, err := a.db.Query(SQL)
+	log.Println(rows)
 	checkInternalServerError(err, w)
 
 	// Define a function map for use in the template.
@@ -97,13 +109,13 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	// Create a Data structure to pass to the template
 	data := Data{}
 	data.Username = user
-	var note Note
+	var note DisplayNote
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
-		err := rows.Scan(&note.NoteID, &note.UserID, &note.NoteTitle, &note.NoteContent, &note.CreationDate, &note.DelegatedTo, &note.CompletionDate, &note.Status)
+		err := rows.Scan(&note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username)
 		checkInternalServerError(err, w)
 		log.Println(note.CompletionDate)
-		note.FormattedDate()
+		//note.FormattedDate()
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
 	}

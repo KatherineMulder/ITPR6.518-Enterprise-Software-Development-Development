@@ -25,8 +25,6 @@ type Note struct {
 	DelegatedTo    string    `json:"delegatedTo"`
 	CompletionDate time.Time `json:"completionDate"`
 	Status         string    `json:"status"`
-	Privileges     string
-	SharedUsers    []Sharing
 }
 
 type Sharing struct {

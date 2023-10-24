@@ -2,7 +2,7 @@
  Katherine & Alex's Enterprise Software Developement Assignment
 
 # Introduction
-This project is based on [pwrcost](https://github.com/yonush/pwrcost). It primarily utilizes built-in Go packages such as `net/http`, `database/sql`, `strconv`, and `html/template`. Additionally, it incorporates third-party packages, specifically `gorilla/mux` for routing and `jackc/pgx` for the PostgreSQL driver.
+This project is based on [pwrcost](https://github.com/yonush/pwrcost). It primarily utilizes built-in Go packages such as `net/http`, `database/sql`, `strconv`, and `html/template`. Additionally, it incorporates third-party packages, specifically `gorilla/mux` for routing, `jackc/pgx` for the PostgreSQL driver, `icza/session` for session management and `crypto/bcrypt` for password hashing.
 
 **To Start the Server on Your Windows System:**
 
@@ -21,7 +21,7 @@ It should direct you to: http://192.168.1.128:8080/login
 
 
 # database configuration 
-The app assumes a database exists - ESD. Edit the *app.go* to change the default database name. Database defaults in the *app.go* are shown below.
+The app assumes a database exists - EnterpriseNotes. Edit the *app.go* to change the default database name. Database defaults in the *app.go* are shown below.
 ``` go
 const (
 	host     = "localhost"
@@ -58,6 +58,8 @@ go build -ldflags="-s -w"
 |html/template docs|Go HTML templates with [W3.CSS](https://www.w3schools.com/w3css/w3css_examples.asp) stylesheet|
 |HTTP router: Gorilla mux|https://pkg.go.dev/github.com/gorilla/mux|
 |Datastore: PostgreSQL driver|https://github.com/jackc/pgx/|
+|Session Management: Session|https://pkg.go.dev/github.com/icza/session@v1.2.0|
+|Password hashing tool:|https://pkg.go.dev/golang.org/x/crypto@v0.14.0/bcrypt|
 
 
 ## Datastore
@@ -89,6 +91,10 @@ This version of the application necessitates a dedicated database, specifically 
 
 ## Session management
 
-The application leverages the [icza/session](https://github.com/icza/session) module to manage basic sessions for authentication purposes. For details on the basic authentication implementation, please refer to [auth.go](https://github.com/yonush/pwrcost/blob/main/auth.go).
+The application leverages the [icza/session](https://github.com/icza/session) module to manage basic sessions for authentication purposes. For details on the basic authentication implementation, please refer to [auth.go](https://github.com/KatherineMulder/ITPR6.518-Enterprise-Software-Development-Development/blob/main/auth.go).
+
+## Password hashing
+
+This application utilizes the [crypto/bcrypt](golang.org/x/crypto/bcrypt) module to exncrpy password entered by the user to store on the database for security reasons. For details in how we use this please refer to [auth.go](https://github.com/KatherineMulder/ITPR6.518-Enterprise-Software-Development-Development/blob/main/auth.go)
 
 ## Sample screens
