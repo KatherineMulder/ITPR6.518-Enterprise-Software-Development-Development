@@ -34,8 +34,14 @@
                 <div class="w3-row">
                     <div class="w3-half">
                         <h2 class="w3-right">Notes</h2>
-                        <h3 class="w3-left-align">User Name: {{.Username}}</h3>
+                        <h3 class="w3-left-align">
+                            User Name: {{.Username}}
+                            <a href="javascript:void(0);" class="w3-button w3-round-large" onclick="userSettings()">
+                                <i class="ion-android-settings"></i>
+                            </a>
+                        </h3>
                     </div>
+                    
                     <div class="w3-half w3-text-right">
                         <div class="w3-right">
                             <a href="#" onclick="document.getElementById('create-form').style.display='block'">
@@ -77,10 +83,8 @@
                 <td>{{$note.CompletionDate}}</td>
                 <td>{{$note.Status}}</td>
                 <td>
-                    <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);"> Modify</button>
-                    <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="EditNote(this)"> Details </button>
-                    <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="deleteNote(this)"> Delete</button>
-                    
+                    <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);"> Open</button>
+                    <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="deleteNote(this)"> Delete</button> <!--needs to change to invisble or visable for the note owners-->
                 </td>
             </tr>
             {{end}}
@@ -88,6 +92,33 @@
         </table>
     </div>
 </div>
+
+<!---User Settings-->
+<div class="w3-container">
+    <div id="user-settings" class="w3-modal">
+        <div class="w3-modal-content w3-card-8 w3-animate-zoom"  style="max-width: 600px;">
+            <!-- head -->
+            <h3 class="w3-left-align">
+                <a href="javascript:void(0);" onclick="userSettings()"></a>
+            </h3>
+            <div class="w3-container w3-teal">
+                <h2>Settings</h2>
+                <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
+            </div>
+            
+            <form class="w3-container" style="max-height: 2000px;" action="/create" method="post">
+                <label class="w3-label">User Name :</label>
+                <input class="w3-input w3-border" name="username">
+                <label class="w3-label">Password :</label>
+                <input class="w3-input w3-border" name="password">
+                <label class="w3-label">Password agian :</label>
+                <input class="w3-input w3-border" name="password">
+                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Done</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <!-- Create Modals -->
 <div class="w3-container">
@@ -134,23 +165,30 @@
         <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
             <!-- head -->
             <div class="w3-container w3-teal">
-                <h2>Modify Task</h2>
-                <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright"
+                <div class="w3-panel">
+                    <h5 class="w3-left-align">Title:</h5>
+                    <h5 class="w3-left-align">Creat by:</h5>
+                </div>
+                <span class="w3-closebtn w3-black w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
             </div>
 
             <form class="w3-container" action="/update" method="post">
+                <a class="w3-right" href="#">
+                    <input type="text" placeholder="Search.." name="search">
+                    <i class="icon ion-search w3-xxlarge hoverbtn " onclick="openSearch()"></i>
+                </a>
+                <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
+                <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
                 <input type="hidden" name="Id" id="costIdToUpdate">
-                <label class="w3-label">User Name:</label>
-                <input class="w3-input" type="number" name="user name">
-                <label class="w3-label">Note Title:</label>
-                <input class="w3-input" type="number" name="title">
-                <label class="w3-label">Task:</label>
-                <input class="w3-input" type="number" name="task">
+                <label class="w3-label">Created Date:</label>
+                <input class="w3-input w3-border" type="date" name="createDate">
+                <label class="w3-label">Status:</label>
+                <input class="w3-input w3-border" type="text" name="status">
                 <label class="w3-label">Delegated to:</label>
-                <input class="w3-input" type="number" name="delegation">
+                <input class="w3-input w3-border" type="number" name="delegation">
                 <label class="w3-label">Completion Date:</label>
-                <input class="w3-input" type="date" name="completion date">
+                <input class="w3-input w3-border" type="date" name="completion date">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
             </form>
         </div>
@@ -199,6 +237,19 @@
         </div>
     </div>
 <script>
+
+    function userSettings() {
+                var userSettingsModal = document.getElementById('user-settings');
+                userSettingsModal.style.display = 'block';
+                // You can add further logic here to populate the user settings modal content
+    }
+
+    function closeUserSettings() {
+        var userSettingsModal = document.getElementById('user-settings');
+        userSettingsModal.style.display = 'none';
+    }
+
+
 
   function updateNote(e) {
     var editForm = document.getElementById('edit-form');

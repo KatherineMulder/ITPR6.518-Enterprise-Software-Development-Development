@@ -178,3 +178,8 @@ func (a *App) setupAuth() {
 	session.Global.Close()
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }
+
+// user settings
+func (a *App) updatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+
+}

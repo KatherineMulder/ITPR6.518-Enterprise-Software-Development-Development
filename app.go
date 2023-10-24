@@ -105,6 +105,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/getdelegations", a.getdelegationsHandler).Methods("GET")
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/userSettings", a.updatePasswordHandler).Methods("POST", "GET")
 
 	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
 	log.Println("Routes established")
