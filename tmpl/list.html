@@ -16,6 +16,7 @@
         a {
             text-decoration: none;
         }
+
         .custom-textarea {
             border: 2px solid #000; 
             border-radius: 5px; 
@@ -96,24 +97,26 @@
 <!---User Settings-->
 <div class="w3-container">
     <div id="user-settings" class="w3-modal">
-        <div class="w3-modal-content w3-card-8 w3-animate-zoom"  style="max-width: 600px;">
+        <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
             <!-- head -->
             <h3 class="w3-left-align">
                 <a href="javascript:void(0);" onclick="userSettings()"></a>
             </h3>
             <div class="w3-container w3-teal">
                 <h2>Settings</h2>
+                <p>Enter New User Name and Password</p>
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
             </div>
-            
-            <form class="w3-container" style="max-height: 2000px;" action="/create" method="post">
+
+            <form class="w3-container" style="max-height: 2000px;" onsubmit="updateUserSettings(event)">
                 <label class="w3-label">User Name :</label>
-                <input class="w3-input w3-border" name="username">
-                <label class="w3-label">Password :</label>
-                <input class="w3-input w3-border" name="password">
-                <label class="w3-label">Password agian :</label>
-                <input class="w3-input w3-border" name="password">
-                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Done</button>
+                <input class="w3-input w3-border" name="newUsername" id="newUsername">
+                <label class="w3-label">New Password :</label>
+                <input class="w3-input w3-border" name="newPassword" id="newPassword">
+                <label class="w3-label">Confirm New Password :</label>
+                <input class="w3-input w3-border" name="confirmPassword">
+                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Update</button>
+                <p>Delete Account?  <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button></p>
             </form>
         </div>
     </div>
@@ -236,7 +239,83 @@
             </div>
         </div>
     </div>
+    
 <script>
+    function updateUsername(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        // Get the new username value from the input field
+        const newUsername = document.getElementById("newUsername").value;
+
+        // Make an asynchronous POST request to the updateUsernameHandler endpoint
+        fetch('/updateUsername', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Use 'application/json' content type
+            },
+            body: JSON.stringify({ newUsername }), // Send the new username in the request body
+        })
+        .then(response => {
+            if (response.ok) {
+                // Handle success (e.g., show a success message)
+                console.log('Username updated successfully');
+            } else {
+                // Handle errors (e.g., show an error message)
+                console.error('Failed to update username');
+            }
+        });
+    }
+
+    function updateUserSettings(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const newUsername = document.getElementById("newUsername").value;
+        const newPassword = document.querySelector('input[name="newPassword"]').value;
+        const confirmPassword = document.querySelector('input[name="confirmPassword"]').value;
+
+        // Validate the new password and password confirmation
+        if (newPassword !== confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
+
+        // Make an asynchronous POST request to update the username and password
+        fetch('/updateUserSettings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Use 'application/json' content type
+            },
+            body: JSON.stringify({ newUsername, newPassword, confirmPassword }), // Send the data as a JSON object
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('User settings updated successfully');
+            } else {
+                alert('Failed to update user settings');
+            }
+        });
+    }
+
+    function deleteAccount() {
+    if (confirm("Are you sure you want to delete your account?")) {
+        
+        fetch('/deleteUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Account deleted successfully');
+                // Redirect the user to the login page or any other appropriate page
+                window.location.href = '/login';
+            } else {
+                alert('Failed to delete account');
+            }
+        });
+    }
+}
 
     function userSettings() {
                 var userSettingsModal = document.getElementById('user-settings');

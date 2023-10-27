@@ -179,7 +179,98 @@ func (a *App) setupAuth() {
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }
 
-// user settings
-func (a *App) updatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 
+func (a *App) updateUsernameHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != "POST" {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    newUsername := r.FormValue("newUsername")
+    a.updateUserSettings(w, r, newUsername, "") // Empty newPassword as we're not updating the password
 }
+
+func (a *App) updatePasswordHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != "POST" {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    newPassword := r.FormValue("newPassword")
+    confirmPassword := r.FormValue("confirmPassword")
+
+    if newPassword != confirmPassword {
+        http.Error(w, "Passwords do not match", http.StatusBadRequest)
+        return
+    }
+
+    a.updateUserSettings(w, r, "", newPassword) // Empty newUsername as we're not updating the username
+}
+
+
+func (a *App) updateUserSettings(w http.ResponseWriter, r *http.Request, newUsername, newPassword string) {
+    a.isAuthenticated(w, r)
+
+    sess := session.Get(r)
+    userID := sess.CAttr("userid").(int)
+
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+    if err != nil {
+        http.Error(w, "Failed to hash the new password", http.StatusInternalServerError)
+        return
+    }
+
+    _, err = a.db.Exec("UPDATE users SET username = $1, password = $2 WHERE userid = $3", newUsername, hashedPassword, userID)
+    if err != nil {
+        http.Error(w, "Failed to update user settings", http.StatusInternalServerError)
+        return
+    }
+
+    updatedSession := session.NewSessionOptions(&session.SessOptions{
+        CAttrs: map[string]interface{}{"username": newUsername, "userid": userID},
+    })
+
+    session.Remove(sess, w)
+    session.Add(updatedSession, w)
+
+    http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
+func (a *App) updateUserSettingsHandler(w http.ResponseWriter, r *http.Request) {
+    a.isAuthenticated(w, r)
+
+    if r.Method != "POST" {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    newUsername := r.FormValue("newUsername")
+    newPassword := r.FormValue("newPassword")
+    confirmPassword := r.FormValue("confirmPassword")
+
+    if newPassword != confirmPassword {
+        http.Error(w, "Passwords do not match", http.StatusBadRequest)
+        return
+    }
+
+    a.updateUserSettings(w, r, newUsername, newPassword)
+}
+
+func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+
+	a.isAuthenticated(w, r)
+
+	sess := session.Get(r)
+	userID := sess.CAttr("userid").(int)
+
+	_, err := a.db.Exec("DELETE FROM users WHERE userid = $1", userID)
+	if err != nil {
+		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+		return
+	}
+   
+}
+
+
+
+
