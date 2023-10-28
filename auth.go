@@ -7,17 +7,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	
 	"strconv"
-    "github.com/gorilla/mux"
 
+    "github.com/gorilla/mux"
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
-	
 )
 
 
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("registerHandler")
+
     if r.Method != "POST" {
         http.ServeFile(w, r, "tmpl/register.html")
         return
@@ -30,6 +30,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
     // Check if the user already exists in the database
     var user User
     err := a.db.QueryRow("SELECT username, password FROM users WHERE username=$1", username).Scan(&user.Username, &user.Password)
+    log.Printf("User %s", user.Username)
 
     switch {
     case err == sql.ErrNoRows:
@@ -51,7 +52,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        tmpl.Execute(w, data)  // Execute the template with the message
+        tmpl.Execute(w, data)
 
     case err != nil:
         http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
@@ -61,10 +62,9 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-
-
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Method %s", r.Method)
+	log.Printf("loginHandler")
+
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/login.html")
 		return
@@ -72,13 +72,14 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// grab user info from the submitted form
 	username := r.FormValue("usrname")
-	password := r.FormValue("psw")
+	password := r.FormValue("password")
 
 	// query database to get match username
 	var user User
 	err := a.db.QueryRow("SELECT userid, username, password FROM users WHERE username=$1",
 		username).Scan(&user.UserID, &user.Username, &user.Password)
 	checkInternalServerError(err, w)
+    log.Printf("User %s", user.Username)
 
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -107,8 +108,11 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
+    log.Printf("isAuthenticated")
+
 	authenticated := false
 
+    // Get the current session
 	sess := session.Get(r)
 
 	if sess != nil {
@@ -127,6 +131,7 @@ func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("logoutHandler")
 
 	// get the current session variables
 	s := session.Get(r)
@@ -160,19 +165,22 @@ func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Invalid JSON data", http.StatusBadRequest)
         return
     }
+    log.Printf("User %s", user.Username)
 
     // Check if the user already exists in the database
     var existingUser User
     err := a.db.QueryRow("SELECT username FROM users WHERE username = $1", user.Username).Scan(&existingUser.Username)
+    log.Printf("User %s", existingUser.Username)
 
     if err == sql.ErrNoRows {
         // User doesn't exist, proceed with registration
         hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-
+        
         if hashErr != nil {
             http.Error(w, "Failed to hash the password", http.StatusInternalServerError)
             return
         }
+        log.Printf("User %s", string(hashedPassword))
 
         // Insert the user into the database
         query := "INSERT INTO users (username, password) VALUES ($1, $2)"
@@ -181,11 +189,13 @@ func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
             http.Error(w, "Failed to insert user into the database", http.StatusInternalServerError)
             return
         }
+        log.Printf("User %s", user.Username)
 
         // Registration successful
         w.WriteHeader(http.StatusCreated)
 		log.Printf("User created successfully")
         fmt.Fprintln(w, "User created successfully")
+
     } else if err != nil {
         http.Error(w, "Error checking user existence: "+err.Error(), http.StatusInternalServerError)
         return
@@ -193,17 +203,12 @@ func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
         // User with the same username already exists
         http.Error(w, "Username already exists", http.StatusConflict)
     }
+    log.Printf("User %s", user.Username)
 }
-
-
-func CreateUser(db *sql.DB, username, password string) error {
-    query := "INSERT INTO users (username, password) VALUES ($1, $2)"
-    _, err := db.Exec(query, username, password)
-    return err
-}
-
 
 func (a *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("getUserHandler")
+
     // Check the HTTP method
     if r.Method != "GET" {
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -246,6 +251,8 @@ func GetUser(db *sql.DB, userID int) (User, error) {
 }
 
 func (a *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("updateUserHandler")
+
     if r.Method != "POST" {
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
         return
@@ -293,6 +300,8 @@ func UpdateUser(db *sql.DB, userID int, username string, password string) error 
 
 
 func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
+    log.Printf("deleteUserHandler")
+    
     a.isAuthenticated(w, r)
 
     sess := session.Get(r)

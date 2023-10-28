@@ -110,10 +110,6 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/userSettings", a.createUserHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUserHandler).Methods("GET")
 	a.Router.HandleFunc("/updateUser/{id:[0-9]+}", a.updateUserHandler).Methods("POST")
-
-
-	
-	
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
 
 

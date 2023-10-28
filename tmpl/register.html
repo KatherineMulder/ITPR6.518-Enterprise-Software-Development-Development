@@ -20,6 +20,7 @@
                     <h2>Register</h2>
                 </div>
                 <form action="/register" method="post" class="w3-container" id="register-form">
+
                     <label class="w3-label">Username</label>
                     <input type="text" class="w3-input" name="username" required><br>
                     <label class="w3-label">Password</label>
@@ -40,17 +41,19 @@
     var registerForm = document.getElementById('register-form');
     registerForm.onsubmit = function() {
       if (this.elements["password"].value != this.elements['passwordAgain'].value) {
-        alert("Password not match");
-        return false;
+        alert("Passwords do not match");
+        return false; // Prevent form submission
       }
       if (this.elements['username'].value.length < 6 || this.elements['password'].value.length < 6) {
-        alert('Username and password must has at least 6 characters');
-        return false;
+        alert('Username and password must have at least 6 characters');
+        return false; // Prevent form submission
       }
       if (this.elements['username'].value == this.elements['password'].value) {
-        alert('Username and password must not match')
-        return false;
+        alert('Username and password must not be the same');
+        return false; // Prevent form submission
       }
+      // If all validation passes, the form will be submitted
+      return true;
     }
 </script>
 </html>
