@@ -108,7 +108,7 @@
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
             </div>
 
-            <form class="w3-container" style="max-height: 2000px;" onsubmit="updateUserSettings(event)">
+            <form class="w3-container" style="max-height: 2000px;" onsubmit="createUserHandler(event)">
                 <label class="w3-label">User Name :</label>
                 <input class="w3-input w3-border" name="newUsername" id="newUsername">
                 <label class="w3-label">New Password :</label>
@@ -116,8 +116,9 @@
                 <label class="w3-label">Confirm New Password :</label>
                 <input class="w3-input w3-border" name="confirmPassword">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Update</button>
-                <p>Delete Account?  <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button></p>
+                <p>Delete Account?  <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button>
             </form>
+            
         </div>
     </div>
 </div>
@@ -241,81 +242,64 @@
     </div>
     
 <script>
-    function updateUsername(event) {
-        event.preventDefault(); // Prevent the default form submission
 
-        // Get the new username value from the input field
-        const newUsername = document.getElementById("newUsername").value;
+    //====== user setting CRUD functions ======//
+    function createUser() {
+    // Get the values of the input fields
+    var newUsername = document.getElementById("newUsername").value;
+    var newPassword = document.getElementById("newPassword").value;
 
-        // Make an asynchronous POST request to the updateUsernameHandler endpoint
-        fetch('/updateUsername', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // Use 'application/json' content type
-            },
-            body: JSON.stringify({ newUsername }), // Send the new username in the request body
-        })
-        .then(response => {
-            if (response.ok) {
-                // Handle success (e.g., show a success message)
-                console.log('Username updated successfully');
-            } else {
-                // Handle errors (e.g., show an error message)
-                console.error('Failed to update username');
-            }
-        });
-    }
+    // Create a JSON object with the user data
+    var userData = {
+        "username": newUsername,
+        "password": newPassword
+    };
 
-    function updateUserSettings(event) {
-        event.preventDefault(); // Prevent the default form submission
-
-        const newUsername = document.getElementById("newUsername").value;
-        const newPassword = document.querySelector('input[name="newPassword"]').value;
-        const confirmPassword = document.querySelector('input[name="confirmPassword"]').value;
-
-        // Validate the new password and password confirmation
-        if (newPassword !== confirmPassword) {
-            alert("Passwords do not match.");
-            return;
+    // Send the user data to the server using an AJAX request
+    fetch("/userSettings", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("User created successfully");
+            // Optionally, you can redirect or perform other actions here
+        } else {
+            alert("Failed to create user. Please try again.");
         }
-
-        // Make an asynchronous POST request to update the username and password
-        fetch('/updateUserSettings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // Use 'application/json' content type
-            },
-            body: JSON.stringify({ newUsername, newPassword, confirmPassword }), // Send the data as a JSON object
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('User settings updated successfully');
-            } else {
-                alert('Failed to update user settings');
-            }
-        });
-    }
-
-    function deleteAccount() {
-    if (confirm("Are you sure you want to delete your account?")) {
-        
-        fetch('/deleteUser', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Account deleted successfully');
-                // Redirect the user to the login page or any other appropriate page
-                window.location.href = '/login';
-            } else {
-                alert('Failed to delete account');
-            }
-        });
-    }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("An error occurred while creating the user.");
+    });
 }
+    
+    function deleteAccount() {
+        if (confirm("Are you sure you want to delete your account?")) {
+            // You can use the Fetch API to send an AJAX request to delete the user
+            fetch("/deleteUser", {
+                method: "POST", // or "GET" based on your server's configuration
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Account deleted successfully.");
+                    // Optionally, you can redirect the user to a different page or perform additional actions here.
+                } else {
+                    alert("Failed to delete account. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred while deleting the account.");
+            });
+        }
+    }
 
     function userSettings() {
                 var userSettingsModal = document.getElementById('user-settings');

@@ -107,9 +107,13 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
 
-	a.Router.HandleFunc("/userSettings", a.updatePasswordHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/updateUsernameHandler", a.updateUsernameHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/updateUserSettings", a.updateUserSettingsHandler).Methods("POST")
+	a.Router.HandleFunc("/userSettings", a.createUserHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUserHandler).Methods("GET")
+	a.Router.HandleFunc("/updateUser/{id:[0-9]+}", a.updateUserHandler).Methods("POST")
+
+
+	
+	
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
 
 
