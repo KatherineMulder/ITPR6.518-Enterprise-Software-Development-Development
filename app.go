@@ -106,14 +106,10 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
-
 	a.Router.HandleFunc("/userSettings", a.createUserHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUserHandler).Methods("GET")
 	a.Router.HandleFunc("/updateUser/{id:[0-9]+}", a.updateUserHandler).Methods("POST")
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
-
-
-
 
 	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
 	log.Println("Routes established")

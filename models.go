@@ -117,7 +117,7 @@ func (a *App) importData() error {
 	log.Printf("Sharing Table created")
 
 	// inserting data into the "users" table
-	stmt, err := a.db.Prepare("INSERT INTO users VALUES($1,$2,$3)")
+	stmt, err := a.db.Prepare("INSERT INTO users(username, password) VALUES($1,$2)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,10 +135,9 @@ func (a *App) importData() error {
 	var u User
 	//range over the data slice and assign the values to the User struct.
 	for _, data := range data {
-		u.UserID, _ = strconv.Atoi(data[0])
-		u.Username = data[1]
-		u.Password = data[2]
-		_, err := stmt.Exec(u.UserID, u.Username, u.Password)
+		u.Username = data[0]
+		u.Password = data[1]
+		_, err := stmt.Exec(u.Username, u.Password)
 
 		if err != nil {
 			log.Fatal(err)

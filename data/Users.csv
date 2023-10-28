@@ -1,6 +1,6 @@
-userID,Username,Password
-1,admin123,$2a$10$jRGs7WDZ0G75fQhjF28eS.IsXokDDdsmXztwGgiJG8JAjF2WkqSqO
-2,kat smith,admin123
-3,john Jamieson, johnjamieson123
-4,Emily Handerson, emily.456
-5,michael King,king*().123
+Username,Password
+admin123,$2a$10$jRGs7WDZ0G75fQhjF28eS.IsXokDDdsmXztwGgiJG8JAjF2WkqSqO
+kat smith,admin123
+john Jamieson, johnjamieson123
+Emily Handerson, emily.456
+michael King,king*().123
