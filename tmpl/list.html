@@ -108,7 +108,7 @@
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
             </div>
 
-            <form class="w3-container" style="max-height: 2000px;" onsubmit="createUserHandler(event)">
+            <form class="w3-container" style="max-height: 2000px;" onsubmit="updateUserSetting(event)">
                 <label class="w3-label">User Name :</label>
                 <input class="w3-input w3-border" name="newUsername" id="newUsername">
                 <label class="w3-label">New Password :</label>
@@ -118,10 +118,10 @@
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Update</button>
                 <p>Delete Account?  <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button>
             </form>
-            
         </div>
     </div>
 </div>
+
 
 
 <!-- Create Modals -->
@@ -244,38 +244,38 @@
 <script>
 
     //====== user setting CRUD functions ======//
-    function createUser() {
-    // Get the values of the input fields
-    var newUsername = document.getElementById("newUsername").value;
-    var newPassword = document.getElementById("newPassword").value;
+    function updateUserSetting(event) {
+    event.preventDefault(); 
 
-    // Create a JSON object with the user data
-    var userData = {
-        "username": newUsername,
-        "password": newPassword
+    const newUsername = document.getElementById("newUsername").value;
+    const newPassword = document.getElementById("newPassword").value;
+
+    const data = {
+      username: newUsername, 
+      password: newPassword, 
     };
 
-    // Send the user data to the server using an AJAX request
-    fetch("/userSettings", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(userData)
+    // Send a POST request to the server
+    fetch("/update", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    .then(response => {
+      .then((response) => {
         if (response.ok) {
-            alert("User created successfully");
-            // Optionally, you can redirect or perform other actions here
+          // The update was successful; you can redirect the user here if needed.
+          window.location.href = "/list";
         } else {
-            alert("Failed to create user. Please try again.");
+          // Handle the error case
+          alert("Error updating user settings. Please try again.");
         }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred while creating the user.");
-    });
-}
+      })
+      .catch((error) => {
+        console.error("An error occurred:", error);
+      });
+  }
     
     function deleteAccount() {
         if (confirm("Are you sure you want to delete your account?")) {

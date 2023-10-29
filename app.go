@@ -96,9 +96,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
 
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
-	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
-	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
+	
 	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
 	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
 	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
@@ -106,12 +104,12 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
-	a.Router.HandleFunc("/userSettings", a.createUserHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/user/{id:[0-9]+}", a.getUserHandler).Methods("GET")
-	a.Router.HandleFunc("/updateUser/{id:[0-9]+}", a.updateUserHandler).Methods("POST")
+	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
+	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/update", a.updateUserSetting).Methods("POST")
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
 
-	//a.Router.HandleFunc("/getSharedUsersForNote/{noteID:[0-9]+}", a.getSharedUsersNoteHandler).Methods("GET")
 	log.Println("Routes established")
 }
 

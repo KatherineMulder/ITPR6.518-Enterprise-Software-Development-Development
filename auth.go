@@ -2,14 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"html/template"
 	"log"
 	"net/http"
-	"strconv"
-
-	"github.com/gorilla/mux"
+	
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,9 +19,8 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract user information from the form
 	username := r.FormValue("username")
-	log.Println(username)
 	password := r.FormValue("password")
-	log.Println(password)
+	
 
 	// Check if the user already exists in the database
 	var user User
@@ -37,32 +31,19 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	case err == sql.ErrNoRows:
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
+
+		// insert to database
 		_, err = a.db.Exec("INSERT INTO users(username, password) VALUES($1, $2)", username, hashedPassword)
+		log.Printf("inserted user to the database")
+
 		checkInternalServerError(err, w)
+	// Render the login page after successful registration
+        http.ServeFile(w, r, "tmpl/login.html")
 
-		// Registration successful message
-		data := struct {
-			Message string
-		}{
-			Message: "Registration successful. You can now log in.",
-		}
-
-		tmpl, err := template.ParseFiles("tmpl/register.html")
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl.Execute(w, data)
-		log.Printf("Complete")
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
-	case err != nil:
-		http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
-		return
-	default:
-		log.Printf("Redirecting")
-		http.Redirect(w, r, "/login", http.StatusMovedPermanently)
-	}
+    case err != nil:
+        http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
+        return
+    }
 }
 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -152,154 +133,40 @@ func (a *App) setupAuth() {
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }
 
-// === CRUD functions for the user ==== //
-// reference: https://www.honeybadger.io/blog/how-to-create-crud-application-with-golang-and-mysql/
+func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
+    log.Printf("updateUserSetting")
 
-func (a *App) createUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("createUserHandler")
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+    if r.Method != "POST" {
+        // Serve a form to allow users to update their settings
+        http.ServeFile(w, r, "tmpl/update_settings.html")
+        return
+    }
 
-	// Parse JSON data from the request body
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
-		return
-	}
-	log.Printf("User %s", user.Username)
+    // Extract user information from the form
+    username := r.FormValue("username")
+    password := r.FormValue("password")
 
-	// Check if the user already exists in the database
-	var existingUser User
-	err := a.db.QueryRow("SELECT username FROM users WHERE username = $1", user.Username).Scan(&existingUser.Username)
-	log.Printf("User %s", existingUser.Username)
+    // Check if a new password is provided
+    if password != "" {
+        // Hash the new password
+        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+        if err != nil {
+            checkInternalServerError(err, w)
+            return
+        }
 
-	if err == sql.ErrNoRows {
-		// User doesn't exist, proceed with registration
-		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+        // Update the user's password in the database
+        _, err = a.db.Exec("UPDATE users SET password=$1 WHERE username=$2", hashedPassword, username)
+        if err != nil {
+            http.Error(w, "Error updating password: "+err.Error(), http.StatusBadRequest)
+            return
+        }
+    }
 
-		if hashErr != nil {
-			http.Error(w, "Failed to hash the password", http.StatusInternalServerError)
-			return
-		}
-		log.Printf("User %s", string(hashedPassword))
-
-		// Insert the user into the database
-		query := "INSERT INTO users (username, password) VALUES ($1, $2)"
-		_, insertErr := a.db.Exec(query, user.Username, string(hashedPassword))
-		if insertErr != nil {
-			http.Error(w, "Failed to insert user into the database", http.StatusInternalServerError)
-			return
-		}
-		log.Printf("User %s", user.Username)
-
-		// Registration successful
-		w.WriteHeader(http.StatusCreated)
-		log.Printf("User created successfully")
-		fmt.Fprintln(w, "User created successfully")
-
-	} else if err != nil {
-		http.Error(w, "Error checking user existence: "+err.Error(), http.StatusInternalServerError)
-		return
-	} else {
-		// User with the same username already exists
-		http.Error(w, "Username already exists", http.StatusConflict)
-	}
-	log.Printf("User %s", user.Username)
+    // Redirect to a success page or user settings page
+    http.Redirect(w, r, "/success", http.StatusFound)
 }
 
-func (a *App) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("getUserHandler")
-
-	// Check the HTTP method
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Get the 'id' parameter from the URL
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	// Convert 'id' to an integer
-	userID, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid 'id' parameter", http.StatusBadRequest)
-		return
-	}
-
-	// Call the GetUser function to fetch the user data from the database
-	user, err := GetUser(a.db, userID)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
-
-	// Convert the user object to JSON and send it in the response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
-}
-
-func GetUser(db *sql.DB, userID int) (User, error) {
-	var user User
-	query := "SELECT userID, username, password FROM users WHERE userID = $1"
-
-	err := db.QueryRow(query, userID).Scan(&user.UserID, &user.Username, &user.Password)
-	if err != nil {
-		return User{}, err
-	}
-
-	return user, nil
-}
-
-func (a *App) updateUserHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("updateUserHandler")
-
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Get the 'id' parameter from the URL
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	// Convert 'id' to an integer
-	userID, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid 'id' parameter", http.StatusBadRequest)
-		return
-	}
-
-	// Parse JSON data from the request body
-	var user User
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
-		return
-	}
-
-	// Call the UpdateUser function to update the user data in the database
-	err = UpdateUser(a.db, userID, user.Username, user.Password)
-	if err != nil {
-		http.Error(w, "Failed to update user", http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Fprintln(w, "User updated successfully")
-}
-
-func UpdateUser(db *sql.DB, userID int, username string, password string) error {
-	// Write the SQL query to update the user's data in the database
-	query := "UPDATE users SET username = $2, password = $3 WHERE userID = $1"
-
-	_, err := db.Exec(query, userID, username, password)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("deleteUserHandler")
@@ -323,7 +190,7 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return a JSON response with the deleted user
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(deletedUser)
+
+	// Redirect the user to the login page after successful deletion
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
