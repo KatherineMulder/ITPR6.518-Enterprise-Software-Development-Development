@@ -93,14 +93,13 @@
         </table>
     </div>
 </div>
-
-<!---User Settings-->
+<!-- User Settings -->
 <div class="w3-container">
     <div id="user-settings" class="w3-modal">
         <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
-            <!-- head -->
+            <!-- Head -->
             <h3 class="w3-left-align">
-                <a href="javascript:void(0);" onclick="userSettings()"></a>
+                <a href="javascript:void(0);" onclick="closeUserSettings()">&times;</a>
             </h3>
             <div class="w3-container w3-teal">
                 <h2>Settings</h2>
@@ -108,7 +107,8 @@
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
             </div>
 
-            <form class="w3-container" style="max-height: 2000px;" onsubmit="updateUserSetting(event)">
+            <form class="w3-container" style="max-height: 2000px;" action="/update-settings" onsubmit="updateUserSetting(event)">
+
                 <label class="w3-label">User Name :</label>
                 <input class="w3-input w3-border" name="newUsername" id="newUsername">
                 <label class="w3-label">New Password :</label>
@@ -116,11 +116,12 @@
                 <label class="w3-label">Confirm New Password :</label>
                 <input class="w3-input w3-border" name="confirmPassword">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Update</button>
-                <p>Delete Account?  <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button>
+                <p>Delete Account? <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button></p>
             </form>
         </div>
     </div>
 </div>
+
 
 
 
@@ -244,38 +245,39 @@
 <script>
 
     //====== user setting CRUD functions ======//
+   // User Settings CRUD functions
     function updateUserSetting(event) {
-    event.preventDefault(); 
+    event.preventDefault();
 
     const newUsername = document.getElementById("newUsername").value;
     const newPassword = document.getElementById("newPassword").value;
 
     const data = {
-      username: newUsername, 
-      password: newPassword, 
+        username: newUsername,
+        password: newPassword,
     };
 
     // Send a POST request to the server
-    fetch("/update", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+    fetch("/update-settings", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+            "Content-Type": "application/json",
+        },
     })
-      .then((response) => {
-        if (response.ok) {
-          // The update was successful; you can redirect the user here if needed.
-          window.location.href = "/list";
-        } else {
-          // Handle the error case
-          alert("Error updating user settings. Please try again.");
-        }
-      })
-      .catch((error) => {
-        console.error("An error occurred:", error);
-      });
-  }
+        .then((response) => {
+            if (response.ok) {
+                // The update was successful; you can redirect the user here if needed.
+                window.location.href = "/login"; // Redirect to a success page
+            } else {
+                // Handle the error case
+                alert("Error updating user settings. Please try again.");
+            }
+        })
+        .catch((error) => {
+            console.error("An error occurred:", error);
+        });
+}
     
     function deleteAccount() {
         if (confirm("Are you sure you want to delete your account?")) {

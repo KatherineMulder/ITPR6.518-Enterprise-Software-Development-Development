@@ -107,7 +107,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/logout", a.logoutHandler).Methods("GET")
 	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/update", a.updateUserSetting).Methods("POST")
+	a.Router.HandleFunc("/update-settings", a.updateUserSetting).Methods("POST")
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
 
 	log.Println("Routes established")

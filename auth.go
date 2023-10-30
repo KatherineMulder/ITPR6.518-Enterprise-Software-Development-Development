@@ -146,6 +146,17 @@ func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
     username := r.FormValue("username")
     password := r.FormValue("password")
 
+	// Check if a new username is provided
+	if username != "" {
+		// Update the user's username in the database
+		_, err := a.db.Exec("UPDATE users SET username=$1 WHERE username=$2", username, session.Get(r).CAttr("username").(string))
+		if err != nil {
+			http.Error(w, "Error updating username: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+		log.Printf("Updated username")
+
     // Check if a new password is provided
     if password != "" {
         // Hash the new password
@@ -162,9 +173,10 @@ func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
             return
         }
     }
+		log.Printf("Updated password")
 
     // Redirect to a success page or user settings page
-    http.Redirect(w, r, "/success", http.StatusFound)
+    http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 
@@ -189,7 +201,6 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
 	}
-
 
 	// Redirect the user to the login page after successful deletion
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
