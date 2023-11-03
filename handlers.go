@@ -126,8 +126,6 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	checkInternalServerError(err, w)
 }
 
-//get all users
-//get all shared notes with privileges
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create")

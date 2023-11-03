@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	
+
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,7 +20,6 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract user information from the form
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-	
 
 	// Check if the user already exists in the database
 	var user User
@@ -37,13 +36,13 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("inserted user to the database")
 
 		checkInternalServerError(err, w)
-	// Render the login page after successful registration
-        http.ServeFile(w, r, "tmpl/login.html")
+		// Render the login page after successful registration
+		http.ServeFile(w, r, "tmpl/login.html")
 
-    case err != nil:
-        http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
-        return
-    }
+	case err != nil:
+		http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 }
 
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,17 +133,17 @@ func (a *App) setupAuth() {
 }
 
 func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
-    log.Printf("updateUserSetting")
+	log.Printf("updateUserSetting")
 
-    if r.Method != "POST" {
-        // Serve a form to allow users to update their settings
-        http.ServeFile(w, r, "tmpl/update_settings.html")
-        return
-    }
+	if r.Method != "POST" {
+		// Serve a form to allow users to update their settings
+		http.ServeFile(w, r, "tmpl/update_settings.html")
+		return
+	}
 
-    // Extract user information from the form
-    username := r.FormValue("username")
-    password := r.FormValue("password")
+	// Extract user information from the form
+	username := r.FormValue("username")
+	password := r.FormValue("password")
 
 	// Check if a new username is provided
 	if username != "" {
@@ -155,30 +154,29 @@ func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-		log.Printf("Updated username")
+	log.Printf("Updated username")
 
-    // Check if a new password is provided
-    if password != "" {
-        // Hash the new password
-        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-        if err != nil {
-            checkInternalServerError(err, w)
-            return
-        }
+	// Check if a new password is provided
+	if password != "" {
+		// Hash the new password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			checkInternalServerError(err, w)
+			return
+		}
 
-        // Update the user's password in the database
-        _, err = a.db.Exec("UPDATE users SET password=$1 WHERE username=$2", hashedPassword, username)
-        if err != nil {
-            http.Error(w, "Error updating password: "+err.Error(), http.StatusBadRequest)
-            return
-        }
-    }
-		log.Printf("Updated password")
+		// Update the user's password in the database
+		_, err = a.db.Exec("UPDATE users SET password=$1 WHERE username=$2", hashedPassword, username)
+		if err != nil {
+			http.Error(w, "Error updating password: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+	log.Printf("Updated password")
 
-    // Redirect to a success page or user settings page
-    http.Redirect(w, r, "/login", http.StatusFound)
+	// Redirect to a success page or user settings page
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
-
 
 func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("deleteUserHandler")

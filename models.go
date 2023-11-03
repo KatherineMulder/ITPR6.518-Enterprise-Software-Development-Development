@@ -88,7 +88,7 @@ func (a *App) importData() error {
     CREATE TABLE "notes" (
         noteID SERIAL PRIMARY KEY,
         userID INTEGER NOT NULL,
-		note_title VARCHAR(50),
+		note_title VARCHAR(255),
 		note_content TEXT NOT NULL,
 		creationDate TIMESTAMP NOT NULL,
 		delegatedTo VARCHAR(100),
