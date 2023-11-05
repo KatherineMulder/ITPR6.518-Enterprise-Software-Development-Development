@@ -121,11 +121,14 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Load the template and execute it with the data
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	checkInternalServerError(err, w)
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
 }
-
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create")
