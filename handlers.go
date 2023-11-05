@@ -51,14 +51,15 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	//get the current username
 	sess := session.Get(r)
-	log.Println(sess)
+	log.Printf("Session received")
 
 	user := "[guest]"
-	log.Println(user)
+	log.Printf("Temp user made")
 
 	// Check if there is a session and retrieve the username if available
 	if sess != nil {
 		user = sess.CAttr("username").(string)
+		log.Printf("User updated")
 	}
 
 	if r.Method != "GET" {
@@ -96,8 +97,10 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Execute the SQL query to retrieve notes
 	rows, err := a.db.Query(SQL)
+
 	log.Println(rows)
 	checkInternalServerError(err, w)
+	log.Println("Query Executed")
 
 	// Define a function map for use in the template.
 	var funcMap = template.FuncMap{
@@ -113,21 +116,28 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
 		err := rows.Scan(&note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username)
+		log.Println(note)
 		checkInternalServerError(err, w)
 		log.Println(note.CompletionDate)
 		//note.FormattedDate()
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
+		log.Printf("Note added")
 	}
 	// Load the template and execute it with the data
+	log.Printf("all noted added")
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	checkInternalServerError(err, w)
+	log.Println(err)
+	log.Println(t)
+	log.Printf("Error passed")
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
+	log.Printf("Page loaded")
 }
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
