@@ -249,18 +249,19 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getdelegationsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Delegations")
 	names := []string{}
 	SQL := `SELECT username from "users"`
 	rows, err := a.db.Query(SQL)
-	log.Println(rows)
+	//log.Println(rows)
 	checkInternalServerError(err, w)
 	var name string
 	for rows.Next() {
 		err := rows.Scan(&name)
-		log.Println(name)
+		//log.Println(name)
 		checkInternalServerError(err, w)
 		names = append(names, name)
-		log.Println(names)
+		//log.Println(names)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(names)

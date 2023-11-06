@@ -62,11 +62,9 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	err := a.db.QueryRow("SELECT userid, username, password FROM users WHERE username=$1",
 		username).Scan(&user.UserID, &user.Username, &user.Password)
 	checkInternalServerError(err, w)
-	log.Println(user)
 
 	//password is encrypted
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	log.Println(err)
 	if err != nil {
 		if user.Password == password {
 			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -132,47 +130,51 @@ func (a *App) setupAuth() {
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }
 
-func (a *App) updateUserSetting(w http.ResponseWriter, r *http.Request) {
-	log.Printf("updateUserSetting")
+func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
+	log.Printf("updateUser")
+	a.isAuthenticated(w, r)
 
 	if r.Method != "POST" {
-		// Serve a form to allow users to update their settings
-		http.ServeFile(w, r, "tmpl/update_settings.html")
-		return
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 
 	// Extract user information from the form
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	newUsername := r.FormValue("newUsername")
+	newPassword := r.FormValue("newPassword")
+	confirmPass := r.FormValue("confirmPassword")
 
-	// Check if a new username is provided
-	if username != "" {
-		// Update the user's username in the database
-		_, err := a.db.Exec("UPDATE users SET username=$1 WHERE username=$2", username, session.Get(r).CAttr("username").(string))
-		if err != nil {
-			http.Error(w, "Error updating username: "+err.Error(), http.StatusBadRequest)
-			return
-		}
-	}
-	log.Printf("Updated username")
+	s := session.Get(r)
+	currentUserID := s.CAttr("userid")
 
-	// Check if a new password is provided
-	if password != "" {
-		// Hash the new password
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-		if err != nil {
+	switch {
+	case newUsername != "" && newPassword != "":
+		if newPassword == confirmPass {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 			checkInternalServerError(err, w)
-			return
+			SQL, err := a.db.Prepare(`UPDATE "users" SET username=$1, password=$2 WHERE userid=$3`)
+			checkInternalServerError(err, w)
+			SQL.Exec(newUsername, hashedPassword, currentUserID)
+		} else {
+			http.Redirect(w, r, "/", 200)
 		}
-
-		// Update the user's password in the database
-		_, err = a.db.Exec("UPDATE users SET password=$1 WHERE username=$2", hashedPassword, username)
-		if err != nil {
-			http.Error(w, "Error updating password: "+err.Error(), http.StatusBadRequest)
-			return
+	case newUsername != "" && newPassword == "":
+		SQL, err := a.db.Prepare(`UPDATE "users" SET username=$1 WHERE userid=$2`)
+		checkInternalServerError(err, w)
+		SQL.Exec(newUsername, currentUserID)
+	case newUsername == "" && newPassword != "":
+		if newPassword == confirmPass {
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+			checkInternalServerError(err, w)
+			SQL, err := a.db.Prepare(`UPDATE "users" SET password=$1 WHERE userid=$2`)
+			checkInternalServerError(err, w)
+			SQL.Exec(hashedPassword, currentUserID)
+		} else {
+			http.Redirect(w, r, "/", 200)
 		}
+	default:
+		http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
+		return
 	}
-	log.Printf("Updated password")
 
 	// Redirect to a success page or user settings page
 	http.Redirect(w, r, "/login", http.StatusFound)
@@ -184,22 +186,29 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	a.isAuthenticated(w, r)
 
 	sess := session.Get(r)
-	userID := sess.CAttr("userid").(int)
+	sessUserID := sess.CAttr("userid").(int)
 
-	// Check if the user exists
-	var deletedUser User // Replace 'User' with your user struct type
-	err := a.db.QueryRow("SELECT * FROM users WHERE userid = $1", userID).Scan(&deletedUser.UserID, &deletedUser.Username, &deletedUser.Password)
+	deleteUsername := r.FormValue("deleteUsername")
+	log.Println(deleteUsername)
+	var deleteUserID int
+	err := a.db.QueryRow(`SELECT userid FROM "users" WHERE username=$1`, deleteUsername).Scan(&deleteUserID)
+	log.Println(err)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		log.Printf("Error retrieving user from the database")
+		checkInternalServerError(err, w)
 		return
 	}
 
-	_, err = a.db.Exec("DELETE FROM users WHERE userid = $1", userID)
-	if err != nil {
-		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
-		return
+	if deleteUserID == sessUserID {
+		a.db.Exec(`DELETE FROM "users" WHERE userid=$1`, deleteUserID)
+	} else {
+		log.Print("Error matching id")
+		http.Redirect(w, r, "/", 200)
 	}
+
+	session.Remove(sess, w)
+	sess = nil
 
 	// Redirect the user to the login page after successful deletion
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }

@@ -38,7 +38,7 @@
                         <h2 class="w3-right">Notes</h2>
                         <h3 class="w3-left-align">
                             User Name: {{.Username}}
-                            <a href="javascript:void(0);" class="w3-button w3-round-large" onclick="userSettings()">
+                            <a href="javascript:void(0);" class="w3-button w3-round-large" onclick="document.getElementById('user-settings').style.display='block'">
                                 <i class="ion-android-settings"></i>
                             </a>
                         </h3>
@@ -88,7 +88,7 @@
                     <td>{{$note.Status}}</td>
                     <td>
                         <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);">Open</button>
-                        <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="deleteNote(this);">Delete</button> <!--needs to change to invisble or visable for the note owners-->
+                        <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="deleteNote(this)">Delete</button> <!--needs to change to invisble or visable for the note owners-->
                     </td>
                 </tr>
                 {{end}}
@@ -102,15 +102,14 @@
         <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
             <!-- Head -->
             <h3 class="w3-left-align">
-                <a href="javascript:void(0);" onclick="closeUserSettings()">&times;</a>
+                <a href="javascript:void(0);" onclick="document.getElementById('user-settings').style.display='none'">&times;</a>
             </h3>
             <div class="w3-container w3-teal">
                 <h2>Settings</h2>
                 <p>Enter New User Name and Password</p>
-                <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright" onclick="closeUserSettings()">&times;</span>
             </div>
 
-            <form class="w3-container" style="max-height: 2000px;" action="/update-settings" onsubmit="updateUserSetting(event)">
+            <form class="w3-container" style="max-height: 2000px;" action="/updateUser" method="post">
 
                 <label class="w3-label">User Name :</label>
                 <input class="w3-input w3-border" name="newUsername" id="newUsername">
@@ -119,7 +118,13 @@
                 <label class="w3-label">Confirm New Password :</label>
                 <input class="w3-input w3-border" name="confirmPassword">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Update</button>
-                <p>Delete Account? <button class="w3-btn w3-red w3-margin-top w3-center" type="button" onclick="deleteAccount()">Delete</button></p>
+                
+            </form>
+            <form class="w3-container" action="/deleteUser" method="post">
+                <input type="hidden" name="deleteUsername" value="{{.Username}}">
+                <div class="w3-center">
+                    <button class="w3-btn w3-red w3-margin-top w3-margin-bottom" type="submit">Delete Account</button>
+                </div>
             </form>
         </div>
     </div>
@@ -172,7 +177,7 @@
             <div class="w3-container w3-teal">
                 <div class="w3-panel">
                     <h5 class="w3-left-align">Title:</h5>
-                    <h5 class="w3-left-align">Creat by:</h5>
+                    <h5 class="w3-left-align">Create by:</h5>
                 </div>
                 <span class="w3-closebtn w3-black w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
@@ -243,136 +248,55 @@
     </div>
     
 <script>
-
-    //====== user setting CRUD functions ======//
-   // User Settings CRUD functions
-    function updateUserSetting(event) {
-    event.preventDefault();
-
-    const newUsername = document.getElementById("newUsername").value;
-    const newPassword = document.getElementById("newPassword").value;
-
-    const data = {
-        username: newUsername,
-        password: newPassword,
-    };
-
-    // Send a POST request to the server
-    fetch("/update-settings", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-        .then((response) => {
-            if (response.ok) {
-                // The update was successful; you can redirect the user here if needed.
-                window.location.href = "/login"; // Redirect to a success page
-            } else {
-                // Handle the error case
-                alert("Error updating user settings. Please try again.");
-            }
-        })
-        .catch((error) => {
-            console.error("An error occurred:", error);
-        });
-}
     
-    function deleteAccount() {
-        if (confirm("Are you sure you want to delete your account?")) {
-            // You can use the Fetch API to send an AJAX request to delete the user
-            fetch("/deleteUser", {
-                method: "POST", // or "GET" based on your server's configuration
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Account deleted successfully.");
-                    // Optionally, you can redirect the user to a different page or perform additional actions here.
-                } else {
-                    alert("Failed to delete account. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while deleting the account.");
-            });
-        }
-    }
-
-    function userSettings() {
-                var userSettingsModal = document.getElementById('user-settings');
-                userSettingsModal.style.display = 'block';
-                // You can add further logic here to populate the user settings modal content
-    }
-
-    function closeUserSettings() {
-        var userSettingsModal = document.getElementById('user-settings');
-        userSettingsModal.style.display = 'none';
-    }
-
-
-
-  function updateNote(e) {
+function updateNote(e) {
     var editForm = document.getElementById('edit-form');
     // display update form
     editForm.style.display = 'block';
-
     var editForm = document.getElementById('edit-form');
   // Get Note Title and User Name from the current row
     var noteTitle = e.parentNode.parentNode.childNodes[1].textContent;
     var userName = e.parentNode.parentNode.childNodes[0].textContent;
     var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
-
     // Set the content in the modal
     document.getElementById('note-title').value = noteTitle;
     document.getElementById('user-name').value = userName;
     document.getElementById('noteIdToUpdate').value = NoteID;
-    
-  }
-
-  function deleteNote(e) {
+}
+function deleteNote(e) {
     var deleteForm = document.getElementById('delete-form');
     deleteForm.style.display = 'block';
     var NoteIdtodelete = e.parentNode.parentNode.childNodes[1].textContent;
     document.getElementById('NoteId').value = NoteIdtodelete;
-  }
-
-  function openShareUserModal() {
-        document.getElementById('shareUserModal').style.display = 'block';
-    }
-
-    function closeShareUserModal() {
-        document.getElementById('shareUserModal').style.display = 'none';
-    }
-
-    function shareWithUser() {
-        // Handle sharing 
-        // document.querySelector('[name="sharedUser"]').value
-        // Close the modal after sharing
-        closeShareUserModal();
-    }
-
-    function populateDelegatedDropdown() {
-        const delegatedDropdown = document.getElementById('delegatedlist');
-        fetch('/getdelegations') // Use the correct URL to fetch the names from the Go server
-            .then(response => response.json())
-            .then(names => {
-                names.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    delegatedDropdown.appendChild(option);
-                });
-            })
-            .catch(error => console.error(error));
-    }
-
-    // Call the function to populate the "Delegated to" dropdown when the page loads
-    window.addEventListener('load', populateDelegatedDropdown); 
+}
+function openShareUserModal() {
+    document.getElementById('shareUserModal').style.display = 'block';
+}
+function closeShareUserModal() {
+    document.getElementById('shareUserModal').style.display = 'none';
+}
+function shareWithUser() {
+    // Handle sharing 
+    // document.querySelector('[name="sharedUser"]').value
+    // Close the modal after sharing
+    closeShareUserModal();
+}
+function populateDelegatedDropdown() {
+    const delegatedDropdown = document.getElementById('delegatedlist');
+    fetch('/getdelegations') // Use the correct URL to fetch the names from the Go server
+        .then(response => response.json())
+        .then(names => {
+            names.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                delegatedDropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error(error));
+}
+// Call the function to populate the "Delegated to" dropdown when the page loads
+window.addEventListener('load', populateDelegatedDropdown); 
 </script>
 </body>
 </html>
