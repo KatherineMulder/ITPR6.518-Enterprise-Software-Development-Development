@@ -19,6 +19,7 @@ type Data struct {
 }
 
 type DisplayNote struct {
+	NoteID         int
 	NoteTitle      string
 	CreationDate   time.Time
 	Delegation     string
@@ -89,7 +90,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	case 4:
 		SQL = `SELECT * FROM "notes" ORDER by status`
 	default:
-		SQL = `SELECT notes.note_title, notes.creationdate, notes.delegatedto, notes.completion_date, notes.status, users.username
+		SQL = `SELECT notes.noteID, notes.note_title, notes.creationdate, notes.delegatedto, notes.completion_date, notes.status, users.username
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
 		ORDER by notes.noteID;`
@@ -115,7 +116,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	var note DisplayNote
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
-		err := rows.Scan(&note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username)
+		err := rows.Scan(&note.NoteID, &note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username)
 		log.Println(note)
 		checkInternalServerError(err, w)
 		log.Println(note.CompletionDate)
@@ -149,25 +150,35 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 
 	var note Note
 	sess := session.Get(r)
-	note.UserID = sess.CAttr("userID").(int)
+	log.Println(sess)
+	note.UserID = sess.CAttr("userid").(int)
+	log.Printf("Note: userid")
+	log.Println(note)
 	note.NoteTitle = r.FormValue("NoteTitle")
+	log.Printf("Note: notetitle")
+	log.Println(note)
 	note.NoteContent = r.FormValue("NoteContent")
+	log.Printf("Note: note content")
+	log.Println(note)
 	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
-	note.DelegatedTo = r.FormValue("DelegatedTo")
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
-	note.Status = r.FormValue("status")
-
+	log.Printf("Note: creatioin date")
+	log.Println(note)
+	note.DelegatedTo = r.FormValue("delegated")
+	log.Printf("Note: delegated to")
+	log.Println(note)
+	note.CompletionDate, err = time.Parse("2006-01-02T15:04", r.FormValue("CompletionDate"))
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error with Completion Date")
+		checkInternalServerError(err, w)
 	}
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf("Note: completeion date")
+	log.Println(note)
 	note.Status = r.FormValue("status")
+	log.Printf("Note: ststaus")
+	log.Println(note)
 
 	// Prepare an SQL statement to insert the new note
-	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creation_date, delegated_to, completetion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
+	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creationdate, delegatedto, completion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
 
 	if err != nil {
 		log.Printf("Prepare query error")
@@ -224,8 +235,7 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
-
-	var noteID, _ = strconv.ParseInt(r.FormValue("NoteID"), 10, 64)
+	var noteID, _ = strconv.ParseInt(r.FormValue("NoteId"), 10, 64)
 	stmt, err := a.db.Prepare(`DELETE FROM "notes" WHERE noteID=$1`)
 	checkInternalServerError(err, w)
 
