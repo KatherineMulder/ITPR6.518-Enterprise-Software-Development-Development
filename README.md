@@ -6,7 +6,7 @@ John Jamieson
 October 31, 2023_ 
 
 #### INTRODUCTION 
-The Enterprise Notes application is geared towards the needs of enterprise users, who can set up their accounts within the service. 
+The Enterprise Note & Task Tracker application is geared towards the needs of enterprise users, who can set up their accounts within the service. 
 Users can create notes, with the creator being the designated owner. Additionally, the application provides a user-friendly list of registered users. Notes can be shared with other users, granting read or read/write access, with specific permissions tailored to individual users.
 The content of each note is straightforward, focusing solely on text, without the need for embedded media. Every note features a name for easy identification, timestamps for creation and completion, and a status flag to track task progress. In the case of delegated tasks, the note will also specify the user to whom the task was delegated.
 This project aims to deliver an efficient, web-based service with a lightweight front-end, prioritizing functionality over an elaborate graphical user interface.
@@ -82,6 +82,8 @@ go build -ldflags="-s -w"
 |`/update `|`POST, GET`|Update note |
 |`/delete `|`POST, GET`|Delete note|
 
+</br>
+
 *User Setting*
 |route|method|description|
 |:--|:-:|:--|
@@ -102,6 +104,8 @@ This version of the application necessitates a dedicated database, specifically 
 | Username        | string      |
 | Password        | string      |
 
+<br>
+
 #####*Note Table*
 | Attribute       | Type        |
 | --------------- | ----------- |
@@ -114,6 +118,8 @@ This version of the application necessitates a dedicated database, specifically 
 | CompletionDate  | time.Time   |
 | Status          | string      |
 
+<br>
+
 #####*Sharing Table*
 | Attribute       | Type        |
 | --------------- | ----------- |
@@ -123,11 +129,15 @@ This version of the application necessitates a dedicated database, specifically 
 | Timestamp       | time.Time   |
 | Status          | string      |
 
+<br>
+
 #####*Data Table*
 | Attribute       | Type        |
 | --------------- | ----------- |
 | userName		  | string  	|
 | note	          |[]DisplayNote|
+
+<br>
 
 #####*DisplayNote Table*
 | Attribute       | Type        |

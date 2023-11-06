@@ -35,6 +35,7 @@ type Sharing struct {
 	Status    string    `json:"status"`
 }
 
+
 func (n Note) FormattedDate() string {
 	log.Println(n.CompletionDate.Format("2002-01-02"))
 	return n.CompletionDate.Format("2002-01-02")
@@ -65,7 +66,7 @@ func readData(fileName string) ([][]string, error) {
 	return records, nil
 }
 
-// //////creating tables in a PostgreSQL database and inserting data into them.///////
+// creating tables in a PostgreSQL database and inserting data into them.
 func (a *App) importData() error {
 	log.Printf("Creating tables...")
 
@@ -175,7 +176,7 @@ func (a *App) importData() error {
 			}
 			creationDate = parsedTime
 		}*/
-
+       
 		n.UserID, _ = strconv.Atoi(data[0])
 		n.NoteTitle = data[1]
 		n.NoteContent = data[2]

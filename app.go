@@ -24,6 +24,7 @@ const (
 	dbname   = "EnterpriseNotes"
 )
 
+// Variables for database connection
 var (
 	err  error
 	wait time.Duration
@@ -37,15 +38,18 @@ type App struct {
 	//username string
 }
 
+// Initialize initializes the application with predefined configuration
 func (a *App) Initialize() {
 
 	a.bindport = "8080"
 
+    // check if the port is set in the environment variables
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
 		a.bindport = tempport
 	}
 
+	// check if the port is set in the command line arguments
 	if len(os.Args) > 1 {
 		s := os.Args[1]
 
@@ -61,6 +65,7 @@ func (a *App) Initialize() {
 	log.Println(psqInfo)
 	db, err := sql.Open("pgx", psqInfo)
 	a.db = db
+
 	//a.importData()
 	if err != nil {
 		log.Println("Either missing github.com/lib/pq or Invalid DB arguements")
@@ -75,6 +80,7 @@ func (a *App) Initialize() {
 
 	log.Println("Connection to DB successful")
 
+	//check if the imported folder exists
 	_, err = os.Stat("./imported")
 	if os.IsNotExist(err) {
 		log.Println("Importing data")
@@ -84,6 +90,7 @@ func (a *App) Initialize() {
 	//set some defaults for the authentication to also support HTTP and HTTPS
 	a.setupAuth()
 
+	//set up the routes
 	a.Router = mux.NewRouter()
 	a.initalizeRoutes()
 
@@ -118,15 +125,19 @@ func (a *App) initalizeRoutes() {
 
 // Run starts the application.
 func (a *App) Run(addr string) {
+
+	// check if the port is set in the environment variables
 	if addr != "" {
 		a.bindport = addr
 	}
 
+	// check if the port is set in the command line arguments
 	ip := GetOutboundIP()
 	log.Println(ip)
 	log.Println(a.bindport)
 	log.Printf("Starting EnterpriseNotes via HTTP Services at http://%s:%s", ip, a.bindport)
 
+	// set timeouts so that a slow or malicious client doesn't
 	srv := &http.Server{
 		Addr: ip + ":" + a.bindport,
 
@@ -136,12 +147,14 @@ func (a *App) Run(addr string) {
 		Handler:      a.Router,
 	}
 
+	// run our server in a goroutine so that it doesn't block.
 	go func() {
 		if err = srv.ListenAndServe(); err != nil {
 			log.Println(err)
 		}
 	}()
 
+	// create a channel to listen for OS signals
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c

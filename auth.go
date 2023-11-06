@@ -210,5 +210,10 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	sess = nil
 
 	// Redirect the user to the login page after successful deletion
+<<<<<<< Updated upstream
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
+=======
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+>>>>>>> Stashed changes
