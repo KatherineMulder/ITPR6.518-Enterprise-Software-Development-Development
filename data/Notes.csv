@@ -1,6 +1,6 @@
 userID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
-1,Shopping List,Buy milk and eggs, ,John, ,None
-2,Work Tasks,Finish the report, ,Emily, ,Completed
-3,Personal Project,Write a blog post, ,Michael, ,Cancelled
-4,Home Chores,Clean the living room, ,Susan, ,In Progress
-5,Meeting Agenda,Prepare for team meeting, ,David, ,In Progress
+1,Shopping List,Buy milk and eggs, ,John Jamieson, ,None
+2,Work Tasks,Finish the report, ,Emily Handerson, ,Completed
+3,Personal Project,Write a blog post, ,Michael King, ,Cancelled
+4,Home Chores,Clean the living room, ,Kat Smith, ,In Progress
+5,Meeting Agenda,Prepare for team meeting, ,Emily Handerson, ,In Progress

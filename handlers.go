@@ -19,13 +19,16 @@ type Data struct {
 }
 
 type DisplayNote struct {
-	NoteID         int
-	NoteTitle      string
-	CreationDate   time.Time
-	Delegation     string
-	CompletionDate time.Time
-	Status         string
-	Username       string
+	NoteID                  int
+	NoteTitle               string
+	CreationDate            time.Time
+	Delegation              string
+	CompletionDate          time.Time
+	Status                  string
+	Username                string
+	NoteContent             string
+	CreationDateFormatted   string
+	CompletionDateFormatted string
 }
 
 func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,23 +37,11 @@ func (a *App) indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }
 
-/*
-the list handler process:
-1.Authentication Check
-2.Session Handling
-3.HTTP Method Check
-4.Data Retrieval
-5.Shared Users for Each Note
-6.Data Preparation
-7.Template Rendering
-8.HTTP response.
-*/
 func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
-
 	log.Printf("list")
 	a.isAuthenticated(w, r)
 
-	//get the current username
+	// get the current username
 	sess := session.Get(r)
 	log.Printf("Session received")
 
@@ -66,9 +57,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		// Handle incorrect HTTP method
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
+		return
 	}
 
-	// ======= get all notes from the "notes" table ========== //
 	// Determine the sorting index
 	params := mux.Vars(r)
 	sortcol, err := strconv.Atoi(params["srt"])
@@ -90,16 +81,22 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	case 4:
 		SQL = `SELECT * FROM "notes" ORDER by status`
 	default:
-		SQL = `SELECT notes.noteID, notes.note_title, notes.creationdate, notes.delegatedto, notes.completion_date, notes.status, users.username
-		FROM "notes"
-		JOIN users ON notes.userid = users.userid
-		ORDER by notes.noteID;`
+		SQL = `SELECT 
+            notes.noteID, 
+            notes.note_title, 
+            notes.creationdate, 
+            notes.delegatedto, 
+            notes.completion_date,
+            notes.status, 
+            users.username, 
+            notes.note_content
+            FROM "notes"
+            JOIN users ON notes.userid = users.userid
+            ORDER by notes.noteID;`
 	}
 
 	// Execute the SQL query to retrieve notes
 	rows, err := a.db.Query(SQL)
-
-	log.Println(rows)
 	checkInternalServerError(err, w)
 	log.Println("Query Executed")
 
@@ -116,29 +113,23 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	var note DisplayNote
 	// Loop through the rows and scan note information from the database.
 	for rows.Next() {
-		err := rows.Scan(&note.NoteID, &note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username)
-		log.Println(note)
+		err := rows.Scan(&note.NoteID, &note.NoteTitle, &note.CreationDate, &note.Delegation, &note.CompletionDate, &note.Status, &note.Username, &note.NoteContent)
 		checkInternalServerError(err, w)
-		log.Println(note.CompletionDate)
-		//note.FormattedDate()
+		note.CreationDateFormatted = formatDateForMainPage(note.CreationDate)
+		note.CompletionDateFormatted = formatDateForMainPage(note.CompletionDate)
 		checkInternalServerError(err, w)
 		data.Notes = append(data.Notes, note)
-		log.Printf("Note added")
 	}
+
 	// Load the template and execute it with the data
-	log.Printf("all noted added")
 	t, err := template.New("list.html").Funcs(funcMap).ParseFiles("tmpl/list.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	checkInternalServerError(err, w)
-	log.Println(err)
-	log.Println(t)
-	log.Printf("Error passed")
 	err = t.Execute(w, data)
 	checkInternalServerError(err, w)
-	log.Printf("Page loaded")
+}
+
+func formatDateForMainPage(t time.Time) string {
+	return t.Format("2006-01-02 15:04")
 }
 
 func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
@@ -205,23 +196,40 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var note Note
 	sess := session.Get(r)
-	note.UserID = sess.CAttr("userID").(int)
-	note.NoteTitle = r.FormValue("NoteTitle")
+	log.Println(sess)
+	note.UserID = sess.CAttr("userid").(int)
+	log.Println(note)
 	note.NoteContent = r.FormValue("NoteContent")
-	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
-	note.DelegatedTo = r.FormValue("DelegatedTo")
-	note.CompletionDate, err = time.Parse("2006-01-02 15:04", r.FormValue("CompletionDate"))
+	log.Println(note)
+	note.DelegatedTo = r.FormValue("delegated")
+	log.Println(note)
 	note.Status = r.FormValue("status")
-
+	log.Println(note)
+	completionDateStr := r.FormValue("completiondate")
+	log.Println(completionDateStr)
+	CompletionDate, err := time.Parse("2006-01-02T15:04", completionDateStr)
 	if err != nil {
 		log.Fatal(err)
+		http.Error(w, "Invalid completion date", http.StatusBadRequest)
+		return
 	}
+	note.CompletionDate = CompletionDate
+	log.Println(note)
 	note.Status = r.FormValue("status")
+	log.Println(note)
+	log.Println(r.FormValue("noteIdToUpdate"))
+	note.NoteID, err = strconv.Atoi(r.FormValue("noteIdToUpdate"))
+	log.Println(note)
+	if err != nil {
+		log.Fatal(err)
+		http.Error(w, "Invaild note id", http.StatusBadRequest)
+		return
+	}
 
-	stmt, err := a.db.Prepare(`UPDATE "notes" SET note_title=$1, note_content=$2, completion_date=$3, status=$4 WHERE noteID=$5`)
+	stmt, err := a.db.Prepare(`UPDATE "notes" SET  note_content=$1, status=$2, delegatedto=$3, completion_date=$4 WHERE noteID=$5`)
 	checkInternalServerError(err, w)
 
-	res, err := stmt.Exec(note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status, note.NoteID)
+	res, err := stmt.Exec(note.NoteContent, note.Status, note.DelegatedTo, note.CompletionDate, note.NoteID)
 	checkInternalServerError(err, w)
 
 	_, err = res.RowsAffected()

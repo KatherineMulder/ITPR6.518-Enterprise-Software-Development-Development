@@ -82,12 +82,12 @@
                     <td>{{$note.NoteID}}</td>
                     <td>{{$note.Username}}</td>
                     <td>{{$note.NoteTitle}}</td>
-                    <td>{{$note.CreationDate}}</td>
+                    <td>{{$note.CreationDateFormatted}}</td>
                     <td>{{$note.Delegation}}</td>
-                    <td>{{$note.CompletionDate}}</td>
+                    <td id="completiondate-main">{{$note.CompletionDateFormatted}}</td>
                     <td>{{$note.Status}}</td>
                     <td>
-                        <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);">Open</button>
+                        <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="updateNote(this);" data-note-content="{{.NoteContent}}">Open</button>
                         <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="deleteNote(this)">Delete</button> <!--needs to change to invisble or visable for the note owners-->
                     </td>
                 </tr>
@@ -149,7 +149,7 @@
                 <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
 
                 <label id="status"class="w3-label" style="font-size: large;">Status:</label>
-                <select class="w3-select" name="status">
+                <select class="w3-input" name="status">
                     <option value="None">None</option>
                     <option value="In Progress">In Progress</option>
                     <option value="Completed">Completed</option>
@@ -157,7 +157,7 @@
                 </select>
 
                 <label class="w3-label" style="font-size: large;" >Completion Date:</label>
-                <input class="w3-input" type="datetime-local" name="CompletionDate" id ="date" value="">
+                <input class="w3-input" type="datetime" name="CompletionDate" id ="date" value="">
 
                 <label id="delegated" class="w3-label" style="font-size: large;">Delegated to:</label>
                 <select class="w3-select" name="delegated" id="delegatedlist"><option value="">Please select</option></select>
@@ -176,29 +176,35 @@
             <!-- head -->
             <div class="w3-container w3-teal">
                 <div class="w3-panel">
-                    <h5 class="w3-left-align">Title:</h5>
-                    <h5 class="w3-left-align">Create by:</h5>
+                    <h5 class="w3-left-align"><span id="note-title-display"></span></h5>
+                    <h5 class="w3-left-align"><span id="user-name-display"></span></h5>
                 </div>
                 <span class="w3-closebtn w3-black w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
             </div>
 
             <form class="w3-container" action="/update" method="post">
+                <input type="hidden" id="noteIdToUpdate" name="noteIdToUpdate">
                 <a class="w3-right" href="#">
                     <input type="text" placeholder="Search.." name="search">
                     <i class="icon ion-search w3-xxlarge hoverbtn " onclick="openSearch()"></i>
                 </a>
                 <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
-                <textarea class="w3-input custom-textarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
-                <input type="hidden" name="Id" id="costIdToUpdate">
-                <label class="w3-label">Created Date:</label>
-                <input class="w3-input w3-border" type="date" name="createDate">
+                <textarea class="w3-input custom-textarea" id="noteContentTextarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
+                <label class="w3-label">Created Date: <span name="createDate" id="createDate-edit"></span></label>
+                <br>
                 <label class="w3-label">Status:</label>
-                <input class="w3-input w3-border" type="text" name="status">
+                <select class="w3-select" name="status" id="status-edit">
+                    <option value="None">None</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
                 <label class="w3-label">Delegated to:</label>
-                <input class="w3-input w3-border" type="number" name="delegation">
+                <select class="w3-select" name="delegated" id="delegatedlist-edit">
+                </select>                    
                 <label class="w3-label">Completion Date:</label>
-                <input class="w3-input w3-border" type="date" name="completion date">
+                <input class="w3-input w3-border" type="datetime-local" name="completiondate" id="completeDate-edit">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
             </form>
         </div>
@@ -248,20 +254,46 @@
     </div>
     
 <script>
-    
 function updateNote(e) {
     var editForm = document.getElementById('edit-form');
-    // display update form
     editForm.style.display = 'block';
-    var editForm = document.getElementById('edit-form');
-  // Get Note Title and User Name from the current row
-    var noteTitle = e.parentNode.parentNode.childNodes[1].textContent;
-    var userName = e.parentNode.parentNode.childNodes[0].textContent;
-    var NoteId = e.parentNode.parentNode.childNodes[3].innerText;
-    // Set the content in the modal
-    document.getElementById('note-title').value = noteTitle;
-    document.getElementById('user-name').value = userName;
-    document.getElementById('noteIdToUpdate').value = NoteID;
+
+    // Get the note information from the current row
+    var noteTitle = e.parentNode.parentNode.childNodes[5].textContent;
+    var userName = e.parentNode.parentNode.childNodes[3].textContent;
+    var noteId = e.parentNode.parentNode.childNodes[1].textContent;
+    var createDate = e.parentNode.parentNode.childNodes[7].textContent;
+    console.log(createDate);
+    var status = e.parentNode.parentNode.childNodes[13].textContent;
+    var delegation = e.parentNode.parentNode.childNodes[9].textContent;
+    var noteContent = e.getAttribute('data-note-content');
+    var completionDateFormatted = e.parentNode.parentNode.querySelector('#completiondate-main').textContent;
+    var completionDate = formatCompletionDateForEditModal(completionDateFormatted);
+    console.log(completionDate);
+    // Set the content in the modal and hidden input field
+    document.getElementById('note-title-display').textContent = noteTitle;
+    document.getElementById('user-name-display').textContent = userName;
+    document.getElementById('noteIdToUpdate').value = noteId;
+    document.getElementById('createDate-edit').textContent = formatCreatedDate(createDate);
+    document.getElementById('status-edit').value = status;
+    document.getElementById('completeDate-edit').value = completionDate;
+    document.getElementById('noteContentTextarea').value = noteContent;
+    // Set the selected option in the delegated select element
+    var delegatedSelect = document.getElementById('delegatedlist-edit');
+    for (var i = 0; i < delegatedSelect.options.length; i++) {
+        if (delegatedSelect.options[i].value === delegation) {
+            delegatedSelect.selectedIndex = i;
+            break;
+        }
+    }
+}
+function updateDisplayedDate(inputElement) {
+    var date = inputElement.value;
+    
+    if (date.length >= 16) {
+        // Remove the seconds (last 3 characters)
+        inputElement.value = date.substring(0, 16);
+    }
 }
 function deleteNote(e) {
     var deleteForm = document.getElementById('delete-form');
@@ -282,21 +314,51 @@ function shareWithUser() {
     closeShareUserModal();
 }
 function populateDelegatedDropdown() {
-    const delegatedDropdown = document.getElementById('delegatedlist');
-    fetch('/getdelegations') // Use the correct URL to fetch the names from the Go server
+    console.log("function")
+    const createDropdown = document.getElementById('delegatedlist');
+    const editDropdown = document.getElementById('delegatedlist-edit');
+
+    fetch('/getdelegations')
         .then(response => response.json())
         .then(names => {
             names.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                delegatedDropdown.appendChild(option);
+                const createOption = document.createElement('option');
+                createOption.value = name;
+                createOption.textContent = name;
+                createDropdown.appendChild(createOption);
+                console.log(createDropdown)
+
+                const editOption = document.createElement('option');
+                editOption.value = name;
+                editOption.textContent = name;
+                editDropdown.appendChild(editOption);
+                console.log(editDropdown)
             });
         })
         .catch(error => console.error(error));
 }
+
 // Call the function to populate the "Delegated to" dropdown when the page loads
-window.addEventListener('load', populateDelegatedDropdown); 
+function formatCreatedDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+    const formattedDate = new Date(dateString).toLocaleDateString('en-US', options);
+    return formattedDate;
+}
+function formatCompletionDateForEditModal(dateString) {
+    // Convert the date to the desired format
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    // Return the formatted date suitable for the input field
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+document.addEventListener('DOMContentLoaded', function () {
+    populateDelegatedDropdown();
+});
 </script>
 </body>
 </html>
