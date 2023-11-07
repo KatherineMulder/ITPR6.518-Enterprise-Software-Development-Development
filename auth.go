@@ -12,6 +12,7 @@ import (
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("registerHandler")
 
+	// Render the registration page 
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/register.html")
 		return
@@ -26,8 +27,10 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	err := a.db.QueryRow("SELECT username, password FROM users WHERE username=$1", username).Scan(&user.Username, &user.Password)
 	log.Printf("User %s", user.Username)
 
+	//  If the user does not exist, insert the user into the database
 	switch {
 	case err == sql.ErrNoRows:
+		// encrypt the password
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		checkInternalServerError(err, w)
 
@@ -39,6 +42,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 		// Render the login page after successful registration
 		http.ServeFile(w, r, "tmpl/login.html")
 
+	// Redirect to the login page after successful registration
 	case err != nil:
 		http.Error(w, "Error: "+err.Error(), http.StatusBadRequest)
 		return
@@ -48,6 +52,7 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("loginHandler")
 
+	// Render the login page
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/login.html")
 		return
@@ -85,17 +90,20 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	session.Add(sess, w)
 
+	// Redirect to the list page after successful login
 	http.Redirect(w, r, "/list", http.StatusSeeOther)
 }
 
 func (a *App) isAuthenticated(w http.ResponseWriter, r *http.Request) {
 	log.Printf("isAuthenticated")
 
+	// if the user is authenticated, return true
 	authenticated := false
 
 	// Get the current session
 	sess := session.Get(r)
 
+	// Check if the session is valid
 	if sess != nil {
 		u := sess.CAttr("username").(string)
 		c := sess.Attr("count").(int)
@@ -126,12 +134,15 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 // authentication handlers using the sessions
 func (a *App) setupAuth() {
+	// Set the session store
 	session.Global.Close()
 	session.Global = session.NewCookieManagerOptions(session.NewInMemStore(), &session.CookieMngrOptions{AllowHTTP: true})
 }
 
 func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("updateUser")
+
+	// Render the user settings page
 	a.isAuthenticated(w, r)
 
 	if r.Method != "POST" {
@@ -143,11 +154,13 @@ func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
 	newPassword := r.FormValue("newPassword")
 	confirmPass := r.FormValue("confirmPassword")
 
+	// Get the current session
 	s := session.Get(r)
 	currentUserID := s.CAttr("userid")
 
 	switch {
 	case newUsername != "" && newPassword != "":
+		// Check if the new password matches the confirm password
 		if newPassword == confirmPass {
 			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 			checkInternalServerError(err, w)
@@ -158,10 +171,12 @@ func (a *App) updateUser(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", 200)
 		}
 	case newUsername != "" && newPassword == "":
+		// Update the username
 		SQL, err := a.db.Prepare(`UPDATE "users" SET username=$1 WHERE userid=$2`)
 		checkInternalServerError(err, w)
 		SQL.Exec(newUsername, currentUserID)
 	case newUsername == "" && newPassword != "":
+		// Update the password
 		if newPassword == confirmPass {
 			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 			checkInternalServerError(err, w)
@@ -188,6 +203,7 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	sess := session.Get(r)
 	sessUserID := sess.CAttr("userid").(int)
 
+	// Extract user information from the form
 	deleteUsername := r.FormValue("deleteUsername")
 	log.Println(deleteUsername)
 	var deleteUserID int
@@ -199,6 +215,7 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if the user is deleting their own account
 	if deleteUserID == sessUserID {
 		a.db.Exec(`DELETE FROM "users" WHERE userid=$1`, deleteUserID)
 	} else {
