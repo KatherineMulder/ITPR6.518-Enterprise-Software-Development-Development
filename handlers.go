@@ -54,6 +54,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	sess := session.Get(r)
 	log.Printf("Session received")
 
+	// Set the default username to guest
 	user := "[guest]"
 	log.Printf("Temp user made")
 
@@ -68,17 +69,18 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
 	}
 
-	// ======= get all notes from the "notes" table ========== //
 	// Determine the sorting index
 	params := mux.Vars(r)
 	sortcol, err := strconv.Atoi(params["srt"])
 
+	// Redirect to the default sorting index if the sorting index is invalid
 	_, ok := params["srt"]
 	if ok && err != nil {
 		http.Redirect(w, r, "/list", http.StatusFound)
 		return
 	}
 
+	// Define the SQL query to retrieve notes
 	SQL := ""
 	switch sortcol {
 	case 1:
@@ -98,8 +100,8 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Execute the SQL query to retrieve notes
 	rows, err := a.db.Query(SQL)
-
 	log.Println(rows)
+
 	checkInternalServerError(err, w)
 	log.Println("Query Executed")
 
@@ -132,6 +134,9 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("Template loaded")
+
+	// Execute the template
 	checkInternalServerError(err, w)
 	log.Println(err)
 	log.Println(t)
@@ -148,24 +153,31 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 
+	// Retrieve the note information from the form
 	var note Note
 	sess := session.Get(r)
 	log.Println(sess)
+
 	note.UserID = sess.CAttr("userid").(int)
 	log.Printf("Note: userid")
 	log.Println(note)
+
 	note.NoteTitle = r.FormValue("NoteTitle")
 	log.Printf("Note: notetitle")
 	log.Println(note)
+
 	note.NoteContent = r.FormValue("NoteContent")
 	log.Printf("Note: note content")
 	log.Println(note)
+
 	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
 	log.Printf("Note: creatioin date")
 	log.Println(note)
+
 	note.DelegatedTo = r.FormValue("delegated")
 	log.Printf("Note: delegated to")
 	log.Println(note)
+
 	note.CompletionDate, err = time.Parse("2006-01-02T15:04", r.FormValue("CompletionDate"))
 	if err != nil {
 		log.Printf("Error with Completion Date")
@@ -173,6 +185,8 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Note: completeion date")
 	log.Println(note)
+
+	// Set the status to "Not Started" by default
 	note.Status = r.FormValue("status")
 	log.Printf("Note: ststaus")
 	log.Println(note)
@@ -180,11 +194,13 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare an SQL statement to insert the new note
 	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creationdate, delegatedto, completion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
 
+	// Check for errors related to the SQL statement
 	if err != nil {
 		log.Printf("Prepare query error")
 		checkInternalServerError(err, w)
 	}
 
+	// Execute the SQL statement
 	_, err = stmt.Exec(note.UserID, note.NoteTitle, note.NoteContent, note.CreationDate, note.DelegatedTo, note.CompletionDate, note.Status)
 	if err != nil {
 		// Log and handle any errors related to SQL statement execution
@@ -203,6 +219,7 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
 
+	// Retrieve the note information from the form
 	var note Note
 	sess := session.Get(r)
 	note.UserID = sess.CAttr("userID").(int)
@@ -218,12 +235,15 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	note.Status = r.FormValue("status")
 
+	// Prepare an SQL statement to update the note
 	stmt, err := a.db.Prepare(`UPDATE "notes" SET note_title=$1, note_content=$2, completion_date=$3, status=$4 WHERE noteID=$5`)
 	checkInternalServerError(err, w)
 
+	// Execute the SQL statement
 	res, err := stmt.Exec(note.NoteTitle, note.NoteContent, note.CompletionDate, note.Status, note.NoteID)
 	checkInternalServerError(err, w)
 
+	// Check the number of rows affected by the update
 	_, err = res.RowsAffected()
 	checkInternalServerError(err, w)
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
@@ -232,9 +252,12 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Delete")
 	a.isAuthenticated(w, r)
+
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	}
+
+	// Retrieve the noteID from the form
 	var noteID, _ = strconv.ParseInt(r.FormValue("NoteId"), 10, 64)
 	stmt, err := a.db.Prepare(`DELETE FROM "notes" WHERE noteID=$1`)
 	checkInternalServerError(err, w)
@@ -250,11 +273,16 @@ func (a *App) deleteHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getdelegationsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Delegations")
+
+	// Retrieve the noteID from the form
 	names := []string{}
 	SQL := `SELECT username from "users"`
 	rows, err := a.db.Query(SQL)
+
 	//log.Println(rows)
 	checkInternalServerError(err, w)
+
+	// Loop through the rows and scan note information from the database.
 	var name string
 	for rows.Next() {
 		err := rows.Scan(&name)
@@ -263,6 +291,8 @@ func (a *App) getdelegationsHandler(w http.ResponseWriter, r *http.Request) {
 		names = append(names, name)
 		//log.Println(names)
 	}
+
+	// Set the content type to JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(names)
 }
