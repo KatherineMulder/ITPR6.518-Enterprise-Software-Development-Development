@@ -32,7 +32,6 @@ type Sharing struct {
 	NoteID    int       `json:"noteID"`
 	UserID    int       `json:"userID"`
 	Timestamp time.Time `json:"timestamp"`
-	Status    string    `json:"status"`
 }
 
 func (n Note) FormattedDate() string {
@@ -83,7 +82,7 @@ func (a *App) importData() error {
 	}
 	log.Printf("Users table created")
 
-	sql = `CREATE TYPE note_status AS ENUM ('None','In Progress','Completed','Cancelled');
+	sql = `CREATE TYPE note_status AS ENUM ('Cancelled','Completed','In Progress','None');
 	DROP TABLE IF EXISTS "notes";
     CREATE TABLE "notes" (
         noteID SERIAL PRIMARY KEY,
@@ -101,14 +100,13 @@ func (a *App) importData() error {
 	}
 	log.Printf("Notes table created")
 
-	sql = `	CREATE TYPE sharing_status AS ENUM ('Read','Edit');
+	sql = `
 	DROP TABLE IF EXISTS "sharing";
     CREATE TABLE "sharing" (
 		sharingID SERIAL PRIMARY KEY,
 		noteID INTEGER,
 		userID INTEGER,
-		setup_date TIMESTAMP,
-		status sharing_status
+		setup_date TIMESTAMP
 	);`
 	_, err = a.db.Exec(sql)
 	if err != nil {
@@ -193,7 +191,7 @@ func (a *App) importData() error {
 	log.Printf("Inserted Data to notesTable")
 
 	//inserting data into the "sharing" table
-	stmt, err = a.db.Prepare(`INSERT INTO "sharing"(noteID, userID, setup_date, status) VALUES($1,$2,$3,$4)`)
+	stmt, err = a.db.Prepare(`INSERT INTO "sharing"(noteID, userID, setup_date) VALUES($1,$2,$3)`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -212,9 +210,8 @@ func (a *App) importData() error {
 		s.UserID, _ = strconv.Atoi(data[0])
 		s.NoteID, _ = strconv.Atoi(data[1])
 		s.Timestamp = timestamp
-		s.Status = data[3]
 
-		_, err = stmt.Exec(s.UserID, s.NoteID, s.Timestamp, s.Status)
+		_, err = stmt.Exec(s.UserID, s.NoteID, s.Timestamp)
 		if err != nil {
 			log.Fatal(err)
 		}

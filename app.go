@@ -43,7 +43,7 @@ func (a *App) Initialize() {
 
 	a.bindport = "8080"
 
-    // check if the port is set in the environment variables
+	// check if the port is set in the environment variables
 	tempport := os.Getenv("PORT")
 	if tempport != "" {
 		a.bindport = tempport
@@ -104,14 +104,7 @@ func (a *App) initalizeRoutes() {
 	staticFileHandler := http.StripPrefix("/statics/", http.FileServer(staticFileDirectory))
 	a.Router.PathPrefix("/statics/").Handler(staticFileHandler).Methods("GET")
 
-	//note routes
 	a.Router.HandleFunc("/", a.indexHandler).Methods("GET")
-	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
-	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
-	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/getdelegations", a.getdelegationsHandler).Methods("GET")
-	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
-	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
 
 	//user settings routes
 	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST", "GET")
@@ -119,6 +112,19 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/updateUser", a.updateUser).Methods("POST", "GET")
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
+
+	//note routes
+	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
+	a.Router.HandleFunc("/list/{srt:[0-9]+}", a.listHandler).Methods("GET")
+	a.Router.HandleFunc("/create", a.createHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/update", a.updateHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/delete", a.deleteHandler).Methods("POST", "GET")
+	a.Router.HandleFunc("/sharenote", a.shareNoteHandler).Methods("POST", "GET")
+
+	//search routes
+	a.Router.HandleFunc("/searchnotes", a.searchNotesHandler).Methods("GET")
+	a.Router.HandleFunc("/getdelegations", a.getdelegationsHandler).Methods("GET")
+	a.Router.HandleFunc("/getsharelist", a.getShareListHandler).Methods("GET")
 
 	log.Println("Routes established")
 }

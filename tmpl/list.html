@@ -27,6 +27,15 @@
         .hidden-td {
             display: none;
         }
+        .highlight {
+            background-color: yellow;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 50%;
+            margin: 0 auto; /* Center horizontally */
+        }
     </style>
 </head>
 <body>
@@ -58,22 +67,22 @@
                  <!-- search icon on the right-->
                  <div class="w3-text-left">
                     <div class="w3-left">
-                     <a href="#">
-                        <input type="text" placeholder="Search.." name="search">
-                        <i class="icon ion-search w3-xxlarge hoverbtn" onclick="openSearch()"></i>
-                    </a>
+                     <form action="/searchnotes" method="get">
+                        <input type="text" placeholder="Search.." name="searchfield">
+                        <button class="icon ion-search w3-xxlarge hoverbtn" type="submit"></button>
+                     </form>
             </header>
                
         <table class="w3-table w3-centered w3-border w3-bordered w3-hoverable">
             <thead>
                 <tr>
-                    <th>Note ID:</th>
-                    <th>Note by:</th>
-                    <th>Note Title:</th>
-                    <th>Date Created:</th>
-                    <th>Delegated to:</th>
-                    <th>Date Completed:</th>
-                    <th>Status:</th>
+                    <th><a href="/list">Note ID:</a></th>
+                    <th><a href="/list/2">Note by:</a></th>
+                    <th><a href="/list/3">Note Title:</a></th>
+                    <th><a href="/list/4">Date Created:</a></th>
+                    <th><a href="/list/5">Delegated to:</a></th>
+                    <th><a href="/list/6">Date Completed:</a></th>
+                    <th><a href="/list/7">Status:</a></th>
                 </tr>
             </thead>
             <tbody> 
@@ -176,59 +185,64 @@
             <!-- head -->
             <div class="w3-container w3-teal">
                 <div class="w3-panel">
-                    <h5 class="w3-left-align"><span id="note-title-display"></span></h5>
-                    <h5 class="w3-left-align"><span id="user-name-display"></span></h5>
+                    <h5 class="w3-left-align highlightable"><span id="note-title-display"></span></h5>
+                    <h5 class="w3-left-align highlightable"><span id="user-name-display"></span></h5>
                 </div>
                 <span class="w3-closebtn w3-black w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
             </div>
+            <form class="w3-right" name="searchinnote">
+                <input type="hidden" id="noteIdToSearch" name="noteIdToSearch">
+                <input type="text" placeholder="Search.." name="search">    
+                <button class="icon ion-search w3-xxlarge hoverbtn" type="button" onclick="updateHighlighting()"></button>
+            </form>
+            <div class="w3-container">
+                <form action="/update" method="post">
+                    <input type="hidden" id="noteIdToUpdate" name="noteIdToUpdate">
+                    <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
+                    <textarea class="w3-input custom-textarea highlightable" id="noteContentTextarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
+                    <label class="w3-label">Created Date: <span class="highlightable" name="createDate" id="createDate-edit"></span></label>
+                    <br>
+                    <label class="w3-label">Status:</label>
+                    <select class="w3-select highlightable" name="status" id="status-edit">
+                        <option value="None">None</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <label class="w3-label">Delegated to:</label>
+                    <select class="w3-select highlightable" name="delegated" id="delegatedlist-edit">
+                    </select>                    
+                    <label class="w3-label">Completion Date:</label>
+                    <input class="w3-input w3-border highlightable" type="datetime-local" name="completiondate" id="completeDate-edit">
+                    <button class="w3-btn w3-teal w3-margin-top w3-margin-left w3-right" type="submit">Save</button>
+                </form>
+                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" onclick="openShareUserModal()">Share</button>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>      
 
-            <form class="w3-container" action="/update" method="post">
-                <input type="hidden" id="noteIdToUpdate" name="noteIdToUpdate">
-                <a class="w3-right" href="#">
-                    <input type="text" placeholder="Search.." name="search">
-                    <i class="icon ion-search w3-xxlarge hoverbtn " onclick="openSearch()"></i>
-                </a>
-                <label id ="NoteContent" class="w3-label" style="font-size: large;">Note Content:</label>
-                <textarea class="w3-input custom-textarea" id="noteContentTextarea" type="text" rows="8" cols="50" name="NoteContent" value="" step=""></textarea>
-                <label class="w3-label">Created Date: <span name="createDate" id="createDate-edit"></span></label>
+<!-- for the share button -->
+<div id="shareUserModal" class="w3-modal">
+    <div class="w3-modal-content w3-card-4">
+        <header class="w3-container w3-teal">
+            <span class="w3-button w3-display-topright" onclick="closeShareUserModal()">&times;</span>
+            <h2>Share User</h2>
+        </header>
+        <div class="w3-container">
+            <form class="w3-container" action="/sharenote" method="post">
+                <!-- Content of the modal dialog goes here -->
+                <input type="hidden" id="noteIdToUpdate-Share" name="noteIdToUpdate-Share"></input>
+                <label class="w3-label" style="font-size: large;">Enter the user(s) to share with:</label><br>
+                <div id="shareoptions"></div>
                 <br>
-                <label class="w3-label">Status:</label>
-                <select class="w3-select" name="status" id="status-edit">
-                    <option value="None">None</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-                <label class="w3-label">Delegated to:</label>
-                <select class="w3-select" name="delegated" id="delegatedlist-edit">
-                </select>                    
-                <label class="w3-label">Completion Date:</label>
-                <input class="w3-input w3-border" type="datetime-local" name="completiondate" id="completeDate-edit">
-                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
+                <button class="w3-button w3-teal" type="submit">Share</button>
             </form>
         </div>
     </div>
 </div>
-
-            <!-- for the share button -->
-            <div id="shareUserModal" class="w3-modal">
-                <div class="w3-modal-content w3-card-4">
-                    <header class="w3-container w3-teal">
-                        <span class="w3-button w3-display-topright" onclick="closeShareUserModal()">&times;</span>
-                        <h2>Share User</h2>
-                    </header>
-                    <div class="w3-container">
-                        <!-- Content of the modal dialog goes here -->
-                        <p>Enter the user to share with:</p>
-                        <input class="w3-input" type="text" name="sharedUser">
-                        <button class="w3-button w3-teal" onclick="shareWithUser()">Share</button>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </div>
-    </div>
     <!-- Delete Modals -->
     <div class="w3-container">
         <div id="delete-form" class="w3-modal">
@@ -254,6 +268,12 @@
     </div>
     
 <script>
+let noteIdToUpdate = null; // Initialize it as null initially
+
+// Function to set the noteIdToUpdate value when it becomes available
+function setNoteIdToUpdate(value) {
+    noteIdToUpdate = value;
+}
 function updateNote(e) {
     var editForm = document.getElementById('edit-form');
     editForm.style.display = 'block';
@@ -274,18 +294,13 @@ function updateNote(e) {
     document.getElementById('note-title-display').textContent = noteTitle;
     document.getElementById('user-name-display').textContent = userName;
     document.getElementById('noteIdToUpdate').value = noteId;
+    document.getElementById('noteIdToSearch').value = noteId;
     document.getElementById('createDate-edit').textContent = formatCreatedDate(createDate);
     document.getElementById('status-edit').value = status;
     document.getElementById('completeDate-edit').value = completionDate;
     document.getElementById('noteContentTextarea').value = noteContent;
-    // Set the selected option in the delegated select element
-    var delegatedSelect = document.getElementById('delegatedlist-edit');
-    for (var i = 0; i < delegatedSelect.options.length; i++) {
-        if (delegatedSelect.options[i].value === delegation) {
-            delegatedSelect.selectedIndex = i;
-            break;
-        }
-    }
+
+    setNoteIdToUpdate(noteId)
 }
 function updateDisplayedDate(inputElement) {
     var date = inputElement.value;
@@ -302,16 +317,16 @@ function deleteNote(e) {
     document.getElementById('NoteId').value = NoteIdtodelete;
 }
 function openShareUserModal() {
+    if (noteIdToUpdate !== null) {
+        // Do something with noteIdToUpdate, like passing it to the share modal
+        // For example, you can update a hidden input field in the share modal form
+        document.getElementById('noteIdToUpdate-Share').value = noteIdToUpdate;
+    }
     document.getElementById('shareUserModal').style.display = 'block';
 }
+
 function closeShareUserModal() {
     document.getElementById('shareUserModal').style.display = 'none';
-}
-function shareWithUser() {
-    // Handle sharing 
-    // document.querySelector('[name="sharedUser"]').value
-    // Close the modal after sharing
-    closeShareUserModal();
 }
 function populateDelegatedDropdown() {
     console.log("function")
@@ -356,8 +371,60 @@ function formatCompletionDateForEditModal(dateString) {
     // Return the formatted date suitable for the input field
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+    // Function to update highlighting
+    function updateHighlighting() {
+        // Get the search value from the search input
+        var searchValue = document.querySelector('form[name="searchinnote"] input[name="search"]').value;
+        console.log(searchValue)
+        
+        // Get all elements in the /update form that need highlighting (adjust selectors as needed)
+        var elementsToHighlight = document.querySelectorAll('.highlightable');
+        console.log(elementsToHighlight)
+
+        // Remove existing highlighting
+        elementsToHighlight.forEach(function (element) {
+            element.classList.remove('highlight');
+        });
+
+        // Highlight elements matching the search value
+        elementsToHighlight.forEach(function (element) {
+            var elementValue = element.value || element.textContent; // Get the value of the element
+            if (elementValue.includes(searchValue)) {
+                element.classList.add('highlight');
+            }
+        });
+    }
+
+    function populateSharelist() {
+    console.log("function");
+    const sharelist = document.getElementById('shareoptions');
+
+    fetch('/getsharelist') // Use the correct endpoint here
+        .then(response => response.json())
+        .then(users => {
+            console.log(users);
+            users.forEach(user => {
+                const createcheckbox = document.createElement('input');
+                createcheckbox.value = user.id; // Access the 'id' property
+                createcheckbox.type = "checkbox";
+                createcheckbox.name = "user";   
+                const createlabel = document.createElement('label');
+                createlabel.textContent = user.name; // Access the 'name' property
+                sharelist.appendChild(createcheckbox);
+                sharelist.appendChild(createlabel);
+                sharelist.appendChild(document.createElement('br'));
+            });
+        })
+        .catch(error => console.error(error));
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     populateDelegatedDropdown();
+    populateSharelist();
+    document.querySelector('form[name="searchinnote"] button[type="button"]').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent form submission or redirection
+        updateHighlighting();
+    });
 });
 </script>
 </body>
