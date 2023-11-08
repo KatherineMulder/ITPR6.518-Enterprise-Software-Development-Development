@@ -34,7 +34,7 @@
             display: flex;
             justify-content: space-between;
             width: 50%;
-            margin: 0 auto; /* Center horizontally */
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -71,6 +71,13 @@
                         <input type="text" placeholder="Search.." name="searchfield">
                         <button class="icon ion-search w3-xxlarge hoverbtn" type="submit"></button>
                      </form>
+                    </div>
+                </div>
+                <div class="w3-text-right">
+                    <div class="w3-right">
+                        <button class="w3-button w3-light-grey w3-padding-small w3-hover-red" onclick="opensharelist()">Create Sharing Lists</button>
+                    </div>
+                </div>
             </header>
                
         <table class="w3-table w3-centered w3-border w3-bordered w3-hoverable">
@@ -103,6 +110,27 @@
                 {{end}}
             </tbody>
         </table>
+    </div>
+</div>
+<!-- Sharing list modal-->
+<div class="w3-container">
+    <div id="sharinglistmodal" class="w3-modal">
+        <div class="w3-modal-content w3-card-8 w3-animate-zoom" style="max-width: 600px;">
+            <h3 class="w3-left-align">
+                <a href="javascript:woid(0);" onclick="closesharelist()">&times;</a>
+            </h3>
+            <div class="w3-container w3-teal">
+                <h2>Create Sharing List</h2>
+            </div>
+
+            <form class="w3-container" style="max-height: 2000px;" action="/createsharinglist" method="post">
+                <label class="w3-label" style="font-size: large;">Name your Sharing list:</label>
+                <input class="w3-input" id="listname" name="listname" value="" type="text">
+                <label class="w3-label" style="font-size: large;">Enter the user(s) to share with:</label><br>
+                <div id="user-share-create"></div>
+                <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create list</button>
+            </form>
+        </div>
     </div>
 </div>
 <!-- User Settings -->
@@ -236,13 +264,18 @@
                 <!-- Content of the modal dialog goes here -->
                 <input type="hidden" id="noteIdToUpdate-Share" name="noteIdToUpdate-Share"></input>
                 <label class="w3-label" style="font-size: large;">Enter the user(s) to share with:</label><br>
-                <div id="shareoptions"></div>
+                <div id="user-shareoptions"></div>
+                <br>
+                <label class="w3-label" style="font-size: large;">and/or</label><br>
+                <label class="w3-label" style="font-size: large;">Select custom sharing lists:</label><br>
+                <div id="custom-list-shareoptions"></div>
                 <br>
                 <button class="w3-button w3-teal" type="submit">Share</button>
             </form>
         </div>
     </div>
 </div>
+
     <!-- Delete Modals -->
     <div class="w3-container">
         <div id="delete-form" class="w3-modal">
@@ -318,8 +351,6 @@ function deleteNote(e) {
 }
 function openShareUserModal() {
     if (noteIdToUpdate !== null) {
-        // Do something with noteIdToUpdate, like passing it to the share modal
-        // For example, you can update a hidden input field in the share modal form
         document.getElementById('noteIdToUpdate-Share').value = noteIdToUpdate;
     }
     document.getElementById('shareUserModal').style.display = 'block';
@@ -327,6 +358,13 @@ function openShareUserModal() {
 
 function closeShareUserModal() {
     document.getElementById('shareUserModal').style.display = 'none';
+}
+
+function opensharelist() {
+    document.getElementById('sharinglistmodal').style.display = 'block';
+}
+function closesharelist() {
+    document.getElementById('sharinglistmodal').style.display = 'none';
 }
 function populateDelegatedDropdown() {
     console.log("function")
@@ -377,7 +415,7 @@ function formatCompletionDateForEditModal(dateString) {
         var searchValue = document.querySelector('form[name="searchinnote"] input[name="search"]').value;
         console.log(searchValue)
         
-        // Get all elements in the /update form that need highlighting (adjust selectors as needed)
+        // Get all elements in the /update form that need highlighting
         var elementsToHighlight = document.querySelectorAll('.highlightable');
         console.log(elementsToHighlight)
 
@@ -397,26 +435,57 @@ function formatCompletionDateForEditModal(dateString) {
 
     function populateSharelist() {
     console.log("function");
-    const sharelist = document.getElementById('shareoptions');
+    const userSharelistcreate = document.getElementById('user-share-create');
+    const userSharelist = document.getElementById('user-shareoptions');
+    const customListSharelist = document.getElementById('custom-list-shareoptions');
 
-    fetch('/getsharelist') // Use the correct endpoint here
+    // Create two separate promises for fetching user and custom sharing lists
+    const userPromise = fetch('/getsharelist')
         .then(response => response.json())
         .then(users => {
-            console.log(users);
             users.forEach(user => {
                 const createcheckbox = document.createElement('input');
                 createcheckbox.value = user.id; // Access the 'id' property
                 createcheckbox.type = "checkbox";
-                createcheckbox.name = "user";   
+                createcheckbox.name = "user";
                 const createlabel = document.createElement('label');
                 createlabel.textContent = user.name; // Access the 'name' property
-                sharelist.appendChild(createcheckbox);
-                sharelist.appendChild(createlabel);
-                sharelist.appendChild(document.createElement('br'));
+                userSharelist.appendChild(createcheckbox);
+                userSharelist.appendChild(createlabel);
+                userSharelist.appendChild(document.createElement('br'));
+
+                userSharelistcreate.appendChild(createcheckbox.cloneNode(true)); // Clone the checkbox for user-share-create
+                userSharelistcreate.appendChild(createlabel.cloneNode(true)); // Clone the label for user-share-create
+                userSharelistcreate.appendChild(document.createElement('br'));
             });
         })
         .catch(error => console.error(error));
+
+    const customListPromise = fetch('/getcustomsharinglists')
+        .then(response => response.json())
+        .then(lists => {
+            lists.forEach(list => {
+                console.log(list.listID)
+                const createcheckbox = document.createElement('input');
+                createcheckbox.value = list.listID;
+                createcheckbox.type = "checkbox";
+                createcheckbox.name = "customlist"; // Use a different name for custom lists
+                console.log(createcheckbox)
+                const createlabel = document.createElement('label');
+                createlabel.textContent = list.listname; // Access the 'listname' property
+                console.log(createlabel)
+                customListSharelist.appendChild(createcheckbox);
+                customListSharelist.appendChild(createlabel);
+                customListSharelist.appendChild(document.createElement('br'));
+            });
+        })
+        .catch(error => console.error(error));
+
+    // Use Promise.all to wait for both promises to complete
+    Promise.all([userPromise, customListPromise]).then(() => {
+    });
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     populateDelegatedDropdown();

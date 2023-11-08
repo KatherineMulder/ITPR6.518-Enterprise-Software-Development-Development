@@ -79,7 +79,8 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 	switch sortcol {
 	case 1:
 		SQL = `SELECT 
-		notes.noteID, 
+		DISTINCT ON (notes.noteID)
+		notes.noteID
 		notes.note_title, 
 		notes.creationdate, 
 		notes.delegatedto, 
@@ -89,12 +90,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
-		OR sharing.userid = $1 
+		OR sharing.userid = $1
 		ORDER by username`
 	case 2:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT ON (notes.noteID)
 		notes.noteID, 
 		notes.note_title, 
 		notes.creationdate, 
@@ -105,12 +106,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
-		OR sharing.userid = $1 
+		OR sharing.userid = $1
 		ORDER by note_title`
 	case 3:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT ON (notes.noteID)
 		notes.noteID, 
 		notes.note_title, 
 		notes.creationdate, 
@@ -121,12 +122,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
 		OR sharing.userid = $1
 		ORDER by creationdate`
 	case 4:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT OBN (notes.noteID)
 		notes.noteID, 
 		notes.note_title, 
 		notes.creationdate, 
@@ -137,12 +138,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
 		OR sharing.userid = $1
 		ORDER by delegatedto`
 	case 5:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT ON (notes.noteID)
 		notes.noteID, 
 		notes.note_title, 
 		notes.creationdate, 
@@ -153,12 +154,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
-		OR sharing.userid = $1 
+		OR sharing.userid = $1
 		ORDER by completion_date`
 	case 6:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT ON (notes.noteID)
 		notes.noteID, 
 		notes.note_title, 
 		notes.creationdate, 
@@ -169,11 +170,12 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 		notes.note_content
 		FROM "notes"
 		JOIN users ON notes.userid = users.userid
-		JOIN sharing ON notes.noteid = sharing.noteid
+		LEFT JOIN sharing ON notes.noteid = sharing.noteid
 		WHERE notes.userid = $1
-		OR sharing.userid = $1 ORDER by status`
+		OR sharing.userid = $1
+		ORDER by status`
 	default:
-		SQL = `SELECT 
+		SQL = `SELECT DISTINCT ON (notes.noteID)
             notes.noteID, 
             notes.note_title, 
             notes.creationdate, 
@@ -184,7 +186,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
             notes.note_content
             FROM "notes"
             JOIN users ON notes.userid = users.userid
-			JOIN sharing ON notes.noteid = sharing.noteid
+			LEFT JOIN sharing ON notes.noteid = sharing.noteid
 			WHERE notes.userid = $1
 			OR sharing.userid = $1
             ORDER by notes.noteID;`
@@ -192,9 +194,7 @@ func (a *App) listHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Execute the SQL query to retrieve notes
 	rows, err := a.db.Query(SQL, userid)
-	log.Println(rows)
 	checkInternalServerError(err, w)
-	log.Println("Query Executed")
 
 	// Define a function map for use in the template.
 	var funcMap = template.FuncMap{
@@ -313,40 +313,18 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the note information from the form
 	var note Note
 	sess := session.Get(r)
-	log.Println(sess)
 
 	note.UserID = sess.CAttr("userid").(int)
-	log.Printf("Note: userid")
-	log.Println(note)
-
 	note.NoteTitle = r.FormValue("NoteTitle")
-	log.Printf("Note: notetitle")
-	log.Println(note)
-
 	note.NoteContent = r.FormValue("NoteContent")
-	log.Printf("Note: note content")
-	log.Println(note)
-
 	note.CreationDate, err = time.Parse("2006-01-02 15:04", time.Now().Format("2006-01-02 15:04"))
-	log.Printf("Note: creatioin date")
-	log.Println(note)
-
 	note.DelegatedTo = r.FormValue("delegated")
-	log.Printf("Note: delegated to")
-	log.Println(note)
-
 	note.CompletionDate, err = time.Parse("2006-01-02T15:04", r.FormValue("CompletionDate"))
 	if err != nil {
 		log.Printf("Error with Completion Date")
 		checkInternalServerError(err, w)
 	}
-	log.Printf("Note: completeion date")
-	log.Println(note)
-
-	// Set the status to "Not Started" by default
 	note.Status = r.FormValue("status")
-	log.Printf("Note: ststaus")
-	log.Println(note)
 
 	// Prepare an SQL statement to insert the new note
 	stmt, err := a.db.Prepare(`INSERT INTO "notes"(userID, note_title, note_content, creationdate, delegatedto, completion_date, status) VALUES($1, $2, $3, $4, $5, $6, $7)`)
@@ -392,7 +370,6 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	formattedDate := CompletionDate.Format("2006-01-02 15:04:05")
 	note.Status = r.FormValue("status")
-	log.Println(r.FormValue("noteIdToUpdate"))
 
 	note.NoteID, err = strconv.Atoi(r.FormValue("noteIdToUpdate"))
 	if err != nil {
@@ -406,13 +383,10 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Execute the SQL statement
 	res, err := stmt.Exec(note.NoteContent, note.Status, note.DelegatedTo, formattedDate, note.NoteID)
-	log.Println(res)
-	log.Println(err)
 	checkInternalServerError(err, w)
 
 	// Check the number of rows affected by the update
 	_, err = res.RowsAffected()
-	log.Println(err)
 	checkInternalServerError(err, w)
 }
 
@@ -443,6 +417,7 @@ func (a *App) shareNoteHandler(w http.ResponseWriter, r *http.Request) {
 	a.isAuthenticated(w, r)
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		return
 	}
 
 	err := r.ParseForm()
@@ -451,35 +426,82 @@ func (a *App) shareNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	noteid, err := strconv.Atoi(r.FormValue("noteIdToUpdate-Share"))
+	noteID, err := strconv.Atoi(r.FormValue("noteIdToUpdate-Share"))
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	log.Println(noteid)
-	selectedusers := r.Form["user"]
-	log.Println(selectedusers)
 
-	for _, userIDStr := range selectedusers {
-		userID, err := strconv.Atoi(userIDStr)
-		if err != nil {
-			log.Printf("Error converting user ID '%s' to an integer: %v", userIDStr, err)
-			continue
+	// Get the selected custom lists from the form
+	selectedCustomLists := r.Form["customlist"]
+	log.Println(selectedCustomLists)
+
+	// Handle sharing with custom lists
+	if len(selectedCustomLists) > 0 {
+		for _, listIDStr := range selectedCustomLists {
+			listID, err := strconv.Atoi(listIDStr)
+			if err != nil {
+				log.Printf("Error converting list ID '%s' to an integer: %v", listIDStr, err)
+				continue
+			}
+
+			// Query user IDs associated with the selected custom list (listID)
+			rows, err := a.db.Query(`SELECT userID FROM user_custom_sharing_lists WHERE listID = $1`, listID)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			// Iterate through the user IDs and create sharing records
+			for rows.Next() {
+				var userID int
+				err := rows.Scan(&userID)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+
+				// Prepare and execute SQL for sharing with individual users
+				SQL, err := a.db.Prepare(`INSERT INTO sharing (noteid, userid, setup_date) VALUES ($1, $2, $3)`)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				currenttime := time.Now()
+				_, err = SQL.Exec(noteID, userID, currenttime)
+				if err != nil {
+					log.Println(err)
+				}
+			}
 		}
+	}
 
-		SQL, err := a.db.Prepare(`INSERT INTO sharing(noteid, userid, setup_date) Values($1,$2,$3)`)
-		if err != nil {
-			log.Println(err)
-			return
+	// Get the selected users from the form
+	selectedUsers := r.Form["user"]
+
+	// Handle sharing with individual users
+	if len(selectedUsers) > 0 {
+		for _, userIDStr := range selectedUsers {
+			userID, err := strconv.Atoi(userIDStr)
+			if err != nil {
+				log.Printf("Error converting user ID '%s' to an integer: %v", userIDStr, err)
+				continue
+			}
+
+			// Prepare and execute SQL for sharing with individual users
+			SQL, err := a.db.Prepare(`INSERT INTO sharing (noteid, userid, setup_date) VALUES ($1, $2, $3)`)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			currenttime := time.Now()
+			_, err = SQL.Exec(noteID, userID, currenttime)
+			if err != nil {
+				log.Println(err)
+			}
 		}
-		currenttime := time.Now()
-
-		res, err := SQL.Exec(noteid, userID, currenttime)
-		if err != nil {
-			log.Println(err)
-		}
-
-		res.RowsAffected()
 	}
 
 	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
@@ -492,18 +514,14 @@ func (a *App) getdelegationsHandler(w http.ResponseWriter, r *http.Request) {
 	names := []string{}
 	SQL := `SELECT username from "users"`
 	rows, err := a.db.Query(SQL)
-
-	//log.Println(rows)
 	checkInternalServerError(err, w)
 
 	// Loop through the rows and scan note information from the database.
 	var name string
 	for rows.Next() {
 		err := rows.Scan(&name)
-		//log.Println(name)
 		checkInternalServerError(err, w)
 		names = append(names, name)
-		//log.Println(names)
 	}
 
 	// Set the content type to JSON
@@ -531,7 +549,6 @@ func (a *App) getShareListHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
 
 	var user User
 	// Loop through the rows and scan user information from the database.
@@ -554,4 +571,48 @@ func (a *App) getShareListHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error encoding JSON response: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
+}
+
+func (a *App) getCustomSharingListsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Retrieving custom sharing lists")
+	a.isAuthenticated(w, r)
+
+	type CustomSharingList struct {
+		ListID   int    `json:"listID"`
+		ListName string `json:"listname"`
+	}
+
+	sess := session.Get(r)
+	currentUserID := sess.CAttr("userid").(int)
+
+	SQL := "SELECT listID, listname FROM custom_sharing_lists WHERE userID = $1"
+	rows, err := a.db.Query(SQL, currentUserID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve custom sharing lists", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	var lists []CustomSharingList
+	for rows.Next() {
+		var list CustomSharingList
+		err := rows.Scan(&list.ListID, &list.ListName)
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/", http.StatusBadRequest)
+		}
+		lists = append(lists, list)
+	}
+
+	// Convert the custom sharing lists to JSON and write it to the response
+	responseJSON, err := json.Marshal(lists)
+	if err != nil {
+		http.Error(w, "Failed to create JSON response", http.StatusInternalServerError)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(responseJSON)
 }

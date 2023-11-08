@@ -112,6 +112,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/register", a.registerHandler).Methods("POST", "GET")
 	a.Router.HandleFunc("/updateUser", a.updateUser).Methods("POST", "GET")
 	a.Router.HandleFunc("/deleteUser", a.deleteUserHandler).Methods("POST")
+	a.Router.HandleFunc("/createsharinglist", a.createsharinglistHandler).Methods("POST", "GET")
 
 	//note routes
 	a.Router.HandleFunc("/list", a.listHandler).Methods("GET")
@@ -125,6 +126,7 @@ func (a *App) initalizeRoutes() {
 	a.Router.HandleFunc("/searchnotes", a.searchNotesHandler).Methods("GET")
 	a.Router.HandleFunc("/getdelegations", a.getdelegationsHandler).Methods("GET")
 	a.Router.HandleFunc("/getsharelist", a.getShareListHandler).Methods("GET")
+	a.Router.HandleFunc("/getcustomsharinglists", a.getCustomSharingListsHandler).Methods("GET")
 
 	log.Println("Routes established")
 }

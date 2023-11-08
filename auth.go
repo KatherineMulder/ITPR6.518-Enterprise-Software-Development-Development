@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/icza/session"
 	"golang.org/x/crypto/bcrypt"
@@ -12,7 +13,7 @@ import (
 func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("registerHandler")
 
-	// Render the registration page 
+	// Render the registration page
 	if r.Method != "POST" {
 		http.ServeFile(w, r, "tmpl/register.html")
 		return
@@ -25,7 +26,6 @@ func (a *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if the user already exists in the database
 	var user User
 	err := a.db.QueryRow("SELECT username, password FROM users WHERE username=$1", username).Scan(&user.Username, &user.Password)
-	log.Printf("User %s", user.Username)
 
 	//  If the user does not exist, insert the user into the database
 	switch {
@@ -205,10 +205,8 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract user information from the form
 	deleteUsername := r.FormValue("deleteUsername")
-	log.Println(deleteUsername)
 	var deleteUserID int
 	err := a.db.QueryRow(`SELECT userid FROM "users" WHERE username=$1`, deleteUsername).Scan(&deleteUserID)
-	log.Println(err)
 	if err != nil {
 		log.Printf("Error retrieving user from the database")
 		checkInternalServerError(err, w)
@@ -228,4 +226,52 @@ func (a *App) deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect the user to the login page after successful deletion
 	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+}
+
+func (a *App) createsharinglistHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Create sharing list")
+	a.isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+	}
+
+	sess := session.Get(r)
+	currentuserid := sess.CAttr("userid").(int)
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		http.Redirect(w, r, "/list", http.StatusBadRequest)
+	}
+
+	listname := r.FormValue("listname")
+	log.Println(listname)
+	selectedusers := r.Form["user"]
+
+	stmt, err := a.db.Prepare("INSERT INTO custom_sharing_lists (userID, listname) VALUES ($1,$2)")
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/list", http.StatusBadRequest)
+	}
+
+	_, err = stmt.Exec(currentuserid, listname)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/list", http.StatusBadRequest)
+	}
+
+	for _, userIDStr := range selectedusers {
+		userID, err := strconv.Atoi(userIDStr)
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/list", http.StatusBadRequest)
+		}
+		_, err = a.db.Exec("INSERT INTO user_custom_sharing_lists (userID, listID) VALUES ($1, (SELECT listID FROM custom_sharing_lists WHERE userID = $2 AND listname = $3))", userID, currentuserid, listname)
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/list", http.StatusBadRequest)
+		}
+	}
+
+	http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 }

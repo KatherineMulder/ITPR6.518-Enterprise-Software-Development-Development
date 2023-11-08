@@ -92,7 +92,8 @@ func (a *App) importData() error {
 		creationDate TIMESTAMP NOT NULL,
 		delegatedTo VARCHAR(100),
 		completion_date TIMESTAMP,
-		status note_status
+		status note_status,
+		FOREIGN KEY (userID) REFERENCES users(userID)
     );`
 	_, err = a.db.Exec(sql)
 	if err != nil {
@@ -106,13 +107,42 @@ func (a *App) importData() error {
 		sharingID SERIAL PRIMARY KEY,
 		noteID INTEGER,
 		userID INTEGER,
-		setup_date TIMESTAMP
+		setup_date TIMESTAMP,
+		FOREIGN KEY (userID) REFERENCES users(userID),
+		FOREIGN KEY (noteID) REFERENCES notes(noteID)
 	);`
 	_, err = a.db.Exec(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Sharing Table created")
+
+	sql = ` CREATE TABLE "custom_sharing_lists" (
+		listID SERIAL PRIMARY KEY,
+		userID INT NOT NULL,
+		listname VARCHAR(255) NOT NULL,
+		UNIQUE (userID, listname)
+	)`
+
+	_, err = a.db.Exec(sql)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Custom Sharing lists Table created")
+
+	sql = ` CREATE TABLE "user_custom_sharing_lists" (
+		id SERIAL PRIMARY KEY,
+		userID INT NOT NULL,
+		listID INT NOT NULL,
+		FOREIGN KEY (userID) REFERENCES users(userID),
+    	FOREIGN KEY (listID) REFERENCES custom_sharing_lists(listID)
+	)`
+
+	_, err = a.db.Exec(sql)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("User Custom Sharing lists Table created")
 
 	// inserting data into the "users" table
 	stmt, err := a.db.Prepare("INSERT INTO users(username, password) VALUES($1,$2)")
