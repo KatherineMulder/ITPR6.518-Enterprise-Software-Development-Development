@@ -1,4 +1,4 @@
-# Data Dictionary for all the tables
+# Data Dictionary
 
 **==modle.go design==**<br>
 | Table    | Field             | Default Value  | Data Type   |
@@ -48,3 +48,4 @@
 | DisplayNote  | CompletionDate | string      |
 | DisplayNote  | Status         | time.Time   |
 | DisplayNote  | Username       | string      |
+| DisplayNote  | NoteContent    | string      |

@@ -207,7 +207,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
-// // The updateHandler handles updating a note. ////
+// The updateHandler handles updating a note. //
 func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("update")
 	a.isAuthenticated(w, r)
@@ -219,16 +219,22 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	var note Note
 	sess := session.Get(r)
 	log.Println(sess)
+
 	note.UserID = sess.CAttr("userid").(int)
 	log.Println(note)
+
 	note.NoteContent = r.FormValue("NoteContent")
 	log.Println(note)
+
 	note.DelegatedTo = r.FormValue("delegated")
 	log.Println(note)
+
 	note.Status = r.FormValue("status")
 	log.Println(note)
+
 	completionDateStr := r.FormValue("completiondate")
 	log.Println(completionDateStr)
+
 	CompletionDate, err := time.Parse("2006-01-02T15:04", completionDateStr)
 	if err != nil {
 		log.Fatal(err)
@@ -237,11 +243,14 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	note.CompletionDate = CompletionDate
 	log.Println(note)
+
 	note.Status = r.FormValue("status")
 	log.Println(note)
 	log.Println(r.FormValue("noteIdToUpdate"))
+
 	note.NoteID, err = strconv.Atoi(r.FormValue("noteIdToUpdate"))
 	log.Println(note)
+	
 	if err != nil {
 		log.Fatal(err)
 		http.Error(w, "Invaild note id", http.StatusBadRequest)
