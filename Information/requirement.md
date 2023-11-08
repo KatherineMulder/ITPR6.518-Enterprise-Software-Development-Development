@@ -220,5 +220,3 @@ Only the owner of a note can change the access privileges of the users the note 
 **5\. User settings**
 
 As users often create notes shared with colleagues like they have done before, a user can save sharing settings. When a note is created, the owner can apply saved sharing settings to share the new note with the same people as before (using the same access privileges).
-
-

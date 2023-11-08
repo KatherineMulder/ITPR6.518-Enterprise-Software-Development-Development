@@ -1,6 +1,6 @@
 userID,NoteTitle,NoteContent,CreationDate,DelegatedTo,CompletionDate,Status
-1,Shopping List,Buy milk and eggs, ,John Jamieson, ,None
-2,Work Tasks,Finish the report, ,Emily Handerson, ,Completed
-3,Personal Project,Write a blog post, ,Michael King, ,Cancelled
-4,Home Chores,Clean the living room, ,Kat Smith, ,In Progress
-5,Meeting Agenda,Prepare for team meeting, ,Emily Handerson, ,In Progress
+1,Meeting Agenda,Project updates and New client proposal, ,John Jamieson, ,None
+2,Client Call Summary,Discussed project scope, ,Emily Handerson, ,Completed
+3,Meeting Notes,Discussed upcoming ad campaign, ,Michael King, ,Cancelled
+4,Training Plan,Orientation on company policies and culture, ,Kat Smith, ,In Progress
+5,Expense Report,Expense report for the business trip, ,Emily Handerson, ,In Progress

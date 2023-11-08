@@ -3,7 +3,7 @@ _Katherine Mulder & Alex Borawski
 Eastern Institute of Technology
 NZ Bachelor of Computing Systems
 John Jamieson
-October 31, 2023_ 
+November 08, 2023_ 
 
 #### INTRODUCTION 
 The Enterprise Note & Task Tracker application is geared towards the needs of enterprise users, who can set up their accounts within the service. 
@@ -90,14 +90,14 @@ go build -ldflags="-s -w"
 |`/login`|`POST, GET`|Login  |
 |`/logout` |`GET`|Logout |
 |`/register` |`POST, GET`|egister|
-|`/update-settings`|`POST`|Update user settings |
+|`/updateUser`|`POST, GET`|Update user settings |
 |`/deleteUser` |`POST`|Delete user |
 
 ## Datastore
 This version of the application necessitates a dedicated database, specifically PostgreSQL. It also involves the initial import of several CSV files from the local data folder. These CSV files are imported during the first run of the application. Subsequently, the application relies on the database for its functioning during every execution.
 
 #### Datatypes / Tables
-#####*User Table*
+**User Table**
 | Attribute       | Type        |
 | --------------- | ----------- |
 | UserID          | int         |
@@ -106,7 +106,7 @@ This version of the application necessitates a dedicated database, specifically 
 
 <br>
 
-#####*Note Table*
+**Note Table**
 | Attribute       | Type        |
 | --------------- | ----------- |
 | NoteID          | int         |
@@ -120,7 +120,7 @@ This version of the application necessitates a dedicated database, specifically 
 
 <br>
 
-#####*Sharing Table*
+**Sharing Table**
 | Attribute       | Type        |
 | --------------- | ----------- |
 | SharingID       | int         |
@@ -131,7 +131,7 @@ This version of the application necessitates a dedicated database, specifically 
 
 <br>
 
-#####*Data Table*
+**Data Table**
 | Attribute       | Type        |
 | --------------- | ----------- |
 | userName		  | string  	|
@@ -139,15 +139,16 @@ This version of the application necessitates a dedicated database, specifically 
 
 <br>
 
-#####*DisplayNote Table*
+**DisplayNote Table**
 | Attribute       | Type        |
 | --------------- | ----------- |
-| NoteTitle       | string      |
-| CreateDate      | time.Time   |
-| Delegation      | string      |
-| CompletionDate  | string      |
-| Status      	  | time.Time   |
 | Username  	  | string      |
+| NoteTitle       | string      |
+| NoteContent  	  | string      |
+| Delegation      | string      |
+| Status      	  | string  	|
+| CreateDate      | time.Time   |
+| CompletionDate  | time.Time   |
 
 ## Session management
 The application leverages the [icza/session](https://github.com/icza/session) module to manage basic sessions for authentication purposes. For details on the basic authentication implementation, please refer to [auth.go](https://github.com/KatherineMulder/ITPR6.518-Enterprise-Software-Development-Development/blob/main/auth.go).
@@ -156,3 +157,27 @@ The application leverages the [icza/session](https://github.com/icza/session) mo
 This application utilizes the [crypto/bcrypt](golang.org/x/crypto/bcrypt) module to exncrpy password entered by the user to store on the database for security reasons. For details in how we use this please refer to [auth.go](https://github.com/KatherineMulder/ITPR6.518-Enterprise-Software-Development-Development/blob/main/auth.go)
 
 ## Sample screens
+**Login Page**
+To start the application, users will need to log in to their accounts or alternatively register a new account.
+
+![login Page](/statics/images/loginPage.png)
+<br>
+**Main Page**
+Once a user logs in successfully, the main page will appear, listing their notes as well as notes shared by other users. 
+![login Page](/statics/images/mainPage.png)
+<br>
+**Register**
+Users can register an account by inputting a username and password.
+![register Page](/statics/images/registerPage.png)
+<br>
+**View Note**
+There is an "Open" button on the right for users to manage their notes. It includes fields for the note title, content, keyword search, setting the status, selecting delegation for registered users, and choosing a completion date for the task.
+![view notes](/statics/images/viewNotePage.png)
+<br>
+**Create a Task**
+Users can create a note by clicking an "Add" symbol located at the top right of the page. For the creation process, it includes fields for the note title, content, a dropdown status menu, the ideal completion date, and the ability to delegate tasks to registered users.
+![create notes](/statics/images/createNotePage.png)
+<br>
+**User Settings**
+Users can update their account details by clicking the settings icon on the top left to update their username and set a new password.
+![user settings](/statics/images/userSettingPage.png)

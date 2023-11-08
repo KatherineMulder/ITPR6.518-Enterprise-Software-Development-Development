@@ -368,7 +368,7 @@ func (a *App) createHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
-// // The updateHandler handles updating a note. ////
+// The updateHandler handles updating a note. //
 func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("update")
 	a.isAuthenticated(w, r)
@@ -393,6 +393,7 @@ func (a *App) updateHandler(w http.ResponseWriter, r *http.Request) {
 	formattedDate := CompletionDate.Format("2006-01-02 15:04:05")
 	note.Status = r.FormValue("status")
 	log.Println(r.FormValue("noteIdToUpdate"))
+
 	note.NoteID, err = strconv.Atoi(r.FormValue("noteIdToUpdate"))
 	if err != nil {
 		log.Fatal(err)
