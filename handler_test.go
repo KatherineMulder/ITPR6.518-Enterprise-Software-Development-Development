@@ -6,6 +6,7 @@ import (
     "fmt"
 	"strings"
 	"reflect"
+    "sync"
     "github.com/stretchr/testify/assert"
 )
 
@@ -27,6 +28,8 @@ type TestUser struct {
 
 type MockDB struct {
     notes map[int]TestDisplayNote // Simulate storage for notes
+    ErrorOnCreateNote bool // Simulate an error when creating a note
+    mu    sync.Mutex
 }
 
 type MockDatabaseDelegations struct {
@@ -44,6 +47,7 @@ type TestCustomSharingList struct {
     ListName string 
 }
 
+
 // Constructor function for the mock database
 func NewMockDB() *MockDB {
     return &MockDB{
@@ -51,11 +55,34 @@ func NewMockDB() *MockDB {
     }
 }
 
-//create a new note
 func (db *MockDB) CreateNote(note TestDisplayNote) error {
+     // Protect the critical section with a mutex
+     db.mu.Lock()
+     defer db.mu.Unlock()
+    
+    // Check for an empty NoteTitle
+    if note.NoteTitle == "" {
+        return fmt.Errorf("NoteTitle cannot be empty")
+    }
+
+    // Check if an error should be simulated
+    if db.ErrorOnCreateNote {
+        return fmt.Errorf("Simulated database error")
+    }
+
+
+    // Check for duplicate NoteTitle or other conditions as needed
+    for _, existingNote := range db.notes {
+        if existingNote.NoteTitle == note.NoteTitle {
+            return fmt.Errorf("Note with the same title already exists")
+        }
+    }
+    // Store the note without modifying the NoteID
     db.notes[note.NoteID] = note
+
     return nil
 }
+
 
 //getNoteByID function to retrieve a note by ID
 func (db *MockDB) GetNoteByID(noteID int) (TestDisplayNote, error) {
@@ -71,6 +98,7 @@ func (db *MockDB) GetNoteByID(noteID int) (TestDisplayNote, error) {
 type TestApp struct {
     DB *MockDB
 }
+
 
 
 //--------create notes test cases-----------------
@@ -98,6 +126,222 @@ func TestCreateNote_Success(t *testing.T) {
     assert.Nil(t, err, "Expected no error, but got an error")
 }
 
+func TestCreateNote_Duplicate(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Create an initial note
+    initialNote := TestDisplayNote{
+        NoteTitle:     "Duplicate Note",
+        Delegation:    "Alice",
+        Status:        "Pending",
+        NoteContent:   "This is the initial note.",
+    }
+
+    // Create the initial note
+    err := app.DB.CreateNote(initialNote)
+    assert.Nil(t, err, "Expected no error when creating the initial note")
+
+    // Attempt to create a duplicate note with the same NoteTitle
+    duplicateNote := TestDisplayNote{
+        NoteTitle:     "Duplicate Note",
+        Delegation:    "Bob",
+        Status:        "Pending",
+        NoteContent:   "This is a duplicate note.",
+    }
+
+    // Try to create the duplicate note
+    err = app.DB.CreateNote(duplicateNote)
+
+    // Ensure that an error occurred, indicating a duplicate note creation attempt
+    assert.NotNil(t, err, "Expected an error for duplicate note creation")
+}
+
+func TestCreateNote_InvalidNoteTitle(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+     // Attempt to create a note with an empty NoteTitle
+     invalidNote := TestDisplayNote{
+        NoteTitle: "", // Empty NoteTitle
+    }
+
+    err := app.DB.CreateNote(invalidNote)
+
+    
+    // Ensure that an error occurred
+    if err == nil {
+        t.Error("Expected an error for note creation with an empty NoteTitle, but no error occurred")
+    }
+}
+
+/*func TestCreateNote_MissingDelegation(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Create a note without specifying a delegation
+    noteWithoutDelegation := TestDisplayNote{
+        NoteTitle:     "Note Without Delegation",
+        Status:        "Pending",
+        NoteContent:   "This is a note without delegation.",
+    }
+
+    err := app.DB.CreateNote(noteWithoutDelegation)
+
+    // Ensure that no error occurred (note creation was successful)
+    assert.Nil(t, err, "Expected no error, but got an error")
+
+    // Optionally, you can retrieve the created note and verify its attributes
+    createdNote, err := app.DB.GetNoteByID(1) // Use the appropriate NoteID, e.g., 1
+    assert.Nil(t, err, "Expected no error when retrieving the created note")
+
+    // Verify that the created note has the expected attributes
+    assert.Equal(t, noteWithoutDelegation.NoteTitle, createdNote.NoteTitle)
+    assert.Equal(t, noteWithoutDelegation.Status, createdNote.Status)
+    assert.Equal(t, noteWithoutDelegation.NoteContent, createdNote.NoteContent)
+    // Ensure that the delegation is empty, as it was not specified
+    assert.Empty(t, createdNote.Delegation)
+}*/
+
+/*
+func TestCreateNote_InvalidStatus(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Attempt to create a note with an invalid status
+    invalidStatusNote := TestDisplayNote{
+        NoteTitle:     "Invalid Status Note",
+        Delegation:    "Alice",
+        Status:        "InvalidStatus", // This is an unsupported status
+        NoteContent:   "This is a note with an invalid status.",
+    }
+
+    err := app.DB.CreateNote(invalidStatusNote)
+
+    // Ensure that an error occurred, indicating an invalid or unsupported status
+    assert.NotNil(t, err, "Expected an error for note creation with an invalid status")
+}
+*/
+
+func TestCreateNote_EmptyNoteContent(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Create a note with empty NoteContent
+    emptyContentNote := TestDisplayNote{
+        NoteTitle:     "Empty Content Note",
+        Delegation:    "Alice",
+        Status:        "Pending",
+        NoteContent:   "", // Empty NoteContent
+    }
+
+    err := app.DB.CreateNote(emptyContentNote)
+
+    // Ensure that no error occurred when creating a note with empty NoteContent
+    assert.Nil(t, err, "Expected no error for note creation with empty NoteContent")
+}
+
+func TestCreateNote_LongTitleAndContent(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Create a note with a long NoteTitle and NoteContent
+    longTitle := "A very long title that exceeds the normal length of a note title and is used to test the function's ability to handle large input data"
+    longContent := "A very long note content that exceeds the normal length of a note's content and is used to test the function's ability to handle large input data."
+
+    longNote := TestDisplayNote{
+        NoteTitle:     longTitle,
+        Delegation:    "Alice",
+        Status:        "Pending",
+        NoteContent:   longContent,
+    }
+
+    err := app.DB.CreateNote(longNote)
+
+    // Ensure that no error occurred when creating a note with long Title and Content
+    assert.Nil(t, err, "Expected no error for note creation with long Title and Content")
+}
+
+// Test case to simulate a database error
+// Test case to simulate a database error
+func TestCreateNote_DatabaseError(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Simulate a database error
+    db.ErrorOnCreateNote = true
+
+    // Attempt to create a note
+    note := TestDisplayNote{
+        NoteTitle:     "Test Note",
+        Delegation:    "Alice",
+        Status:        "Pending",
+        NoteContent:   "This is a test note.",
+    }
+
+    err := app.DB.CreateNote(note)
+
+    // Ensure that an error occurred as expected
+    assert.NotNil(t, err, "Expected an error when the database returns an error")
+}
+
+
+func TestConcurrentNoteCreation(t *testing.T) {
+    numGoroutines := 5
+
+    for i := 0; i < numGoroutines; i++ {
+        db := NewMockDB() // Create a new database instance for each goroutine
+
+        go func(i int) {
+            app := TestApp{
+                DB: db,
+            }
+
+            note := TestDisplayNote{
+                NoteTitle:   fmt.Sprintf("Concurrent Note %d", i),
+                Delegation:  "User",
+                Status:      "Pending",
+                NoteContent: "This is a concurrent note.",
+            }
+
+            err := app.DB.CreateNote(note)
+
+            if err != nil {
+                t.Errorf("Goroutine %d: Error creating note: %v", i, err)
+            }
+        }(i)
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 //---------------delete notes test cases-----------------
@@ -119,19 +363,17 @@ func TestDeleteNote_Success(t *testing.T) {
     }
 
     // Create a test note to delete
-    testNote := TestDisplayNote{ // Use TestDisplayNote here
-        NoteID: 1, // Existing note ID
+    testNote := TestDisplayNote{
+        NoteID: 1,
+        NoteTitle: "Test Note", // Provide a valid NoteTitle
+        // Add other necessary fields
     }
 
     db.CreateNote(testNote)
-
-    //call deleteNote function with the test note ID
     err := app.DB.DeleteNote(testNote.NoteID)
 
-    // Assert that no error occurred (note deletion was successful)
     assert.Nil(t, err, "Expected no error, but got an error")
 
-    // Verify that the note was actually deleted
     _, err = app.DB.GetNoteByID(testNote.NoteID)
     assert.NotNil(t, err, "Expected an error for a deleted note, but no error occurred")
 }
