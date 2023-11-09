@@ -69,6 +69,7 @@ go build -ldflags="-s -w"
 |Datastore: PostgreSQL driver|https://github.com/jackc/pgx/|
 |Session Management: Session|https://pkg.go.dev/github.com/icza/session@v1.2.0|
 |Password hashing tool:|https://pkg.go.dev/golang.org/x/crypto@v0.14.0/bcrypt|
+|Testing tool:|https://github.com/stretchr/testify/assert|
 
 ## Server Routes / Functions
 *Note*
@@ -155,6 +156,9 @@ The application leverages the [icza/session](https://github.com/icza/session) mo
 
 ## Password hashing
 This application utilizes the [crypto/bcrypt](golang.org/x/crypto/bcrypt) module to exncrpy password entered by the user to store on the database for security reasons. For details in how we use this please refer to [auth.go](https://github.com/KatherineMulder/ITPR6.518-Enterprise-Software-Development-Development/blob/main/auth.go)
+
+## Testing 
+This project leverages the power of [stretchr/testify](https://github.com/stretchr/testify) to ensure the accuracy and reliability of our functions. This testing library plays a crucial role in verifying that our code functions as expected, making it an integral part of our development and quality assurance process.
 
 ## Sample screens
 **Login Page**

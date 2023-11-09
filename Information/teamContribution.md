@@ -11,15 +11,14 @@ The purpose of this report is to comprehensively assess the contributions and pe
 
 **Our roles:**
 Alex's primary focus was on the coding aspect of the project. He was responsible for developing the software's core functionality, ensuring that it met the project's objectives and functioned seamlessly. His dedication to writing clean and efficient code was instrumental in achieving the desired outcomes.
-Additionally, Katherine assumed a pivotal role in establishing the project's foundational structure. Her responsibilities encompassed the design and implementation of the database structure, overseeing user settings, and maintaining meticulous project documentation.
+Additionally, Katherine assumed a pivotal role in establishing the project's foundational structure. Her responsibilities encompassed the design and implementation of the database structure, overseeing user settings, and maintaining meticulous project documentation, and also playing a crucial role in testing the code to ensure its reliability and quality.
 </br>
 
 **Individual Contributions:**
 
 _Alex Borawski_
 Contribution Summary:
-**Note Functions:** Led the development of note-related functions, including CRUD operations, note analysis, reading and editing notes, and delegation, enhancing the core functionality of the application.
-**Test Code:** Responsible for creating and maintaining test code for the note functions, ensuring the reliability and quality of the note-related features.
+**Note management and functionality:** Led the development of note-related functions, including CRUD operations, note analysis, reading and editing notes, note sharing and delegation, enhancing the core functionality of the application.
 **Database Setup:** involved in configuring the database setup, guaranteeing data management and accessibility.
 **API:** Actively contributed to the API development, facilitating data exchange and integration with other software components.
 
@@ -29,6 +28,7 @@ Contribution Summary:
 **User Settings:** Implemented CRUD (Create, Read, Update, Delete) functions for user settings, providing users with control over their preferences.
 **Database Setup:** Designed and set up the project's database architecture, ensuring data integrity and efficiency.
 **API:** Actively contributed to the API development, facilitating data exchange and integration with other software components.
+**Test Code:** Responsible for creating and maintaining test code for the note functions, ensuring the reliability and quality of the note-related features.
 **Documentation:** Responsible for creating and maintaining comprehensive project documentation, ensuring clarity and reference throughout the project lifecycle.
 </br>
 

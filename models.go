@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-	//"golang.org/x/crypto/bcrypt" // Importing the bcrypt package for password hashing
 )
 
 // Create Structs for the tables
@@ -155,11 +154,7 @@ func (a *App) importData() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*// Prepare the user_shares insert query this is an example code for how to handle the password hash ....
-	userSharesStmt, err := a.db.Prepare("INSERT INTO user_shares (note_id, username, privileges) VALUES($1, $2, $3)")
-	if err != nil {
-		log.Fatal(err)
-	}*/
+	
 	var u User
 	//range over the data slice and assign the values to the User struct.
 	for _, data := range data {
@@ -189,21 +184,7 @@ func (a *App) importData() error {
 	/////insertion into the "notes" table.///////
 	var n Note
 	for _, data := range data {
-		/*var completetime *time.Time
-		creationDate := time.Now()
-
-		if data[3] != "None" {
-			parsedTime, err := time.Parse("02/01", data[3])
-			if err != nil {
-				parsedTime, err = time.Parse("2006-02-02", data[3])
-				if err != nil {
-					log.Printf("Error parsing date for row: %v, error: %v", data, err)
-					continue
-				}
-			}
-			creationDate = parsedTime
-		}*/
-
+		
 		n.UserID, _ = strconv.Atoi(data[0])
 		n.NoteTitle = data[1]
 		n.NoteContent = data[2]
