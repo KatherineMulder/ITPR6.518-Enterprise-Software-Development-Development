@@ -185,3 +185,6 @@ Users can create a note by clicking an "Add" symbol located at the top right of 
 **User Settings**
 Users can update their account details by clicking the settings icon on the top left to update their username and set a new password.
 ![user settings](/statics/images/userSettingPage.png)
+
+**Create Share Note**
+![user settings](/statics/images/shareNote.png)
