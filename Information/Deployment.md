@@ -114,3 +114,10 @@ This will create the necessary database for the application.
 
 Provide a document that lists the additional specifications that were missing but required to implement your solution.
 - Owners can set read or read/write permissions?
+
+*Testing* 
+For the Note: 
+1. Invalid Status:create a note with an invalid or unsupported status and verify that an error is not returned.
+
+2. Delegation cannot create a note without specifying a delegation 
+

@@ -99,8 +99,6 @@ type TestApp struct {
     DB *MockDB
 }
 
-
-
 //--------create notes test cases-----------------
 //test cases for successfully creating a note.
 func TestCreateNote_Success(t *testing.T) {
@@ -181,6 +179,7 @@ func TestCreateNote_InvalidNoteTitle(t *testing.T) {
     }
 }
 
+// the functions that didn't pass the test below are commented out
 /*func TestCreateNote_MissingDelegation(t *testing.T) {
     db := NewMockDB()
 
@@ -334,15 +333,133 @@ func TestConcurrentNoteCreation(t *testing.T) {
     }
 }
 
+func TestEdgeCasesAndSpecialCharacters(t *testing.T) {
+    db := NewMockDB()
 
+    app := TestApp{
+        DB: db,
+    }
 
+    // Test minimum length for NoteTitle and NoteContent
+    minLenNote := TestDisplayNote{
+        NoteTitle:   "A", // Minimum allowed length
+        NoteContent: "A", 
+    }
 
+    err := app.DB.CreateNote(minLenNote)
+    assert.Nil(t, err, "Expected no error for minimum length note")
 
+    // Test maximum length for NoteTitle and NoteContent
+    maxLenNote := TestDisplayNote{
+        NoteTitle:   strings.Repeat("A", 255), // Maximum allowed length
+        NoteContent: strings.Repeat("A", 1000), 
+    }
 
+    err = app.DB.CreateNote(maxLenNote)
+    assert.Nil(t, err, "Expected no error for maximum length note")
 
+    // Test valid note creation with special characters
+    specialCharNote := TestDisplayNote{
+        NoteTitle:   "Special !@#$%^&*()_+{}:\"<>?[];',./`~ Title",
+        NoteContent: "This is a note with special characters: !@#$%^&*()_+{}:\"<>?[];',./`~",
+    }
 
+    err = app.DB.CreateNote(specialCharNote)
+    assert.Nil(t, err, "Expected no error for note with special characters")
+}
 
+func TestSpecialCharactersAndDifferentStatuses(t *testing.T) {
+    db := NewMockDB()
 
+    app := TestApp{
+        DB: db,
+    }
+
+    // Create a note with special characters in NoteTitle and NoteContent
+    specialCharNote := TestDisplayNote{
+        NoteTitle:   "Special !@#$%^&*()_+{}:\"<>?[];',./`~ Title",
+        NoteContent: "This is a note with special characters: !@#$%^&*()_+{}:\"<>?[];',./`~",
+    }
+
+    err := app.DB.CreateNote(specialCharNote)
+    assert.Nil(t, err, "Expected no error for note with special characters")
+
+    // Test valid note creation with different statuses
+    statuses := []string{"Pending", "In Progress", "Completed", "On Hold", "Cancelled"}
+
+    for _, status := range statuses {
+        statusNote := TestDisplayNote{
+            NoteTitle:   "Status Note - " + status,
+            Delegation:  "John",
+            Status:      status,
+            NoteContent: "This is a note with status: " + status,
+        }
+
+        err := app.DB.CreateNote(statusNote)
+        assert.Nil(t, err, "Expected no error for note with status: "+status)
+    }
+}
+
+func TestDifferentStatusesAndDelegations(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Test creating notes with different valid status values
+    statuses := []string{"Pending", "In Progress", "Completed", "On Hold", "Cancelled"}
+
+    for _, status := range statuses {
+        statusNote := TestDisplayNote{
+            NoteTitle:   "Status Note - " + status,
+            Delegation:  "John",
+            Status:      status,
+            NoteContent: "This is a note with status: " + status,
+        }
+
+        err := app.DB.CreateNote(statusNote)
+        assert.Nil(t, err, "Expected no error for note with status: "+status)
+    }
+
+    // Test valid note creation with different delegations
+    delegations := []string{"Alice", "Bob", "Charlie", "David"}
+
+    for _, delegation := range delegations {
+        delegationNote := TestDisplayNote{
+            NoteTitle:   "Delegation Note - " + delegation,
+            Delegation:  delegation,
+            Status:      "Pending",
+            NoteContent: "This is a note for delegation: " + delegation,
+        }
+
+        err := app.DB.CreateNote(delegationNote)
+        assert.Nil(t, err, "Expected no error for note with delegation: "+delegation)
+    }
+}
+
+func TestDifferentDelegations(t *testing.T) {
+    db := NewMockDB()
+
+    app := TestApp{
+        DB: db,
+    }
+
+    // Test valid note creation with different delegations
+    delegations := []string{"TeamA", "TeamB", "Engineering", "Marketing", "Sales"}
+
+    for _, delegation := range delegations {
+        delegationNote := TestDisplayNote{
+            NoteTitle:   "Delegation Note - " + delegation,
+            Delegation:  delegation,
+            Status:      "Pending",
+            NoteContent: "This is a note for delegation: " + delegation,
+        }
+
+        err := app.DB.CreateNote(delegationNote)
+        assert.Nil(t, err, "Expected no error for note with delegation: "+delegation)
+    }
+}
 
 //---------------delete notes test cases-----------------
 func (db *MockDB) DeleteNote(noteID int) error {
