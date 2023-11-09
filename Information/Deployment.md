@@ -112,12 +112,11 @@ This will create the necessary database for the application.
 
 ----------------------------------
 
-Provide a document that lists the additional specifications that were missing but required to implement your solution.
-- Owners can set read or read/write permissions?
+**Additional Specification Required**
 
-*Testing* 
-For the Note: 
-1. Invalid Status:create a note with an invalid or unsupported status and verify that an error is not returned.
+There was some additional code we needed in order to fully implement the program to have all of its functions. The bulk of the added code was the  inclusion of two additional data tables to store the needed information to allow users to create a sharing list. The first table stores the list name and the user it is attached to and the second table is the connections to users stored in each list. These combined allows users to create "Sharing lists" that can be used to make sharing documents to other users easier.
 
-2. Delegation cannot create a note without specifying a delegation 
+Unfortunately there was one feature that has not been included in this code and that is the ability to give out specific read and/or Write access to these users. This function proved difficult to implement correctly so we thought it would be best to not include it in this version but to add it later once we can create a polished working version.
+
+We did also for the demonstration of this project make it so delegation of a note is needed, as to show the feature is functioning. It is easy to change this function to not need a delegation, but in its current state, to not delegate the note to someone else, you can just delegate it to yourself.
 

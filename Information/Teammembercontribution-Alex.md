@@ -4,7 +4,7 @@ By Alex Borawski
 
 In this assignment we were tasked to make a sharing note program that would scale well with company size with Go being the main language in use. There was also expected to be unit testing and documentation of setup, data models and design choices.
 
-OVer the course of the assignment, I was primarily involved in creating, testing and bug fixing the main code, whilst Katherine did a lot of work in documentation and front end development.
+Over the course of the assignment, I was primarily involved in creating and bug fixing the main code, ensuring it works, whilst Katherine did a lot of work in documentation and front end development.
 
 In the following categories I would say Katherine rates:
 
